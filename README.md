@@ -2,7 +2,7 @@
 
 <div style="text-align: center"><table><tr>
   <td style="text-align: center">
-    <img src="demo/p1.gif" width="200"/>
+    <img src="demo/first_run.gif" width="200"/>
 </td>
 <td style="text-align: center">
     <img src="demo/p2.gif" width="200"/>
