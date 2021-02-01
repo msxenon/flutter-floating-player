@@ -1,11 +1,5 @@
 # Flutter Floating PLayer
-![Floating Player](demo/p1.gif){ width=50% }
-
-![Floating Player](demo/p2.gif)
-
-![Floating Player](demo/p3.gif)
-
-![Floating Player](demo/p4.gif)
+![](demo/p1.gif) ![](demo/p2.gif) ![](demo/p3.gif) ![](demo/p4.gif)
 
 *This widget still Under Development to fully support Flutter VLC Player (iOS/Android)
 
