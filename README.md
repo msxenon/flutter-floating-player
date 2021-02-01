@@ -1,5 +1,5 @@
 # Flutter Floating PLayer
-![Floating Player](demo/p1.gif)
+![Floating Player](demo/p1.gif =250x)
 
 ![Floating Player](demo/p2.gif)
 
