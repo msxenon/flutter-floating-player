@@ -46,7 +46,7 @@ class _MyHomePageState extends State<MyHomePage> {
             children: <Widget>[
               RaisedButton(
                 onPressed: () {
-                  PLayerNav.showPlayer(context);
+                  PLayerNav.showPlayer(context, null, null);
                 },
                 child: Text('Open Floating Player Screen'),
               ),

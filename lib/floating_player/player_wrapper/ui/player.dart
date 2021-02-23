@@ -4,20 +4,22 @@ import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 
 class Player extends StatelessWidget {
   final bool usePlayerPlaceHolder;
+  final Widget customPlayer;
 
-  const Player({Key key, this.usePlayerPlaceHolder: false}) : super(key: key);
+  const Player({Key key, this.usePlayerPlaceHolder: false, this.customPlayer}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return usePlayerPlaceHolder
         ? Placeholder()
-        : VlcPlayerWithControls(
-            controller: VlcPlayerController.network(
-              'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-              hwAcc: HwAcc.FULL,
-              autoPlay: true,
-              options: VlcPlayerOptions(),
-            ),
-          );
+        : customPlayer ??
+            VlcPlayerWithControls(
+              controller: VlcPlayerController.network(
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+                hwAcc: HwAcc.FULL,
+                autoPlay: true,
+                options: VlcPlayerOptions(),
+              ),
+            );
   }
 }

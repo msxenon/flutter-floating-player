@@ -3,12 +3,18 @@ import 'package:flutter_player/floating_player/player_wrapper/controllers/video_
 import 'package:get/get_state_manager/src/simple/get_state.dart';
 
 class PLayerDetails extends StatelessWidget {
-  PLayerDetails({Key key}) : super(key: key);
+  final Widget child;
+  final Color bgColor;
+  PLayerDetails({
+    Key key,
+    this.child,
+    this.bgColor,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black,
+      color: bgColor ?? Colors.black,
       constraints: BoxConstraints.expand(),
       child: GetBuilder<FloatingViewController>(
         id: FloatingViewController.detailsControllerId,
@@ -20,16 +26,17 @@ class PLayerDetails extends StatelessWidget {
             constraints: BoxConstraints.expand(),
             child: !model.showDetails
                 ? SizedBox.shrink()
-                : ListView.builder(
-                    itemBuilder: (_, index) => ListTile(
-                      title: Text(
-                        'Item $index',
-                        style: TextStyle(color: Colors.white),
+                : child ??
+                    ListView.builder(
+                      itemBuilder: (_, index) => ListTile(
+                        title: Text(
+                          'Item $index',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
+                      padding: EdgeInsets.zero,
+                      itemCount: 50,
                     ),
-                    padding: EdgeInsets.zero,
-                    itemCount: 50,
-                  ),
           );
         },
       ),

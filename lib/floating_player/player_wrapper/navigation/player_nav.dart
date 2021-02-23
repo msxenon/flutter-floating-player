@@ -9,7 +9,7 @@ import '../controllers/video_view_controller.dart';
 class PLayerNav {
   static OverlayEntry overlayEntry;
 
-  static void showPlayer(BuildContext ctx) async {
+  static void showPlayer(BuildContext ctx, WidgetBuilder player, WidgetBuilder details, {Color bgColor}) async {
     if (!clearViews()) {
       await Future.delayed(Duration(milliseconds: 200));
     }
@@ -35,7 +35,10 @@ class PLayerNav {
                             child: AnimatedOpacity(
                               duration: Duration(milliseconds: 250),
                               opacity: model.isMaximized.value ? 1 : 0,
-                              child: PLayerDetails(),
+                              child: PLayerDetails(
+                                child: details(context),
+                                bgColor: bgColor,
+                              ),
                             ),
                           ),
                         ),
@@ -49,10 +52,13 @@ class PLayerNav {
                           horizontalSapce: 0,
                           dragAnimationScale: 0.5,
                           shadowBorderRadius: 0,
+                          initialHeight: model.initialHeight,
                           touchDelay: Duration(milliseconds: 100),
-                          child: Player(
-                            usePlayerPlaceHolder: false,
-                          ),
+                          child: player != null
+                              ? player(context)
+                              : Player(
+                                  usePlayerPlaceHolder: false,
+                                ),
                           initialPosition: AnchoringPosition.maximized,
                         ),
                       ],
