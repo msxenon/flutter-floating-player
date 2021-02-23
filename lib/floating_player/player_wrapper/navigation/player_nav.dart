@@ -21,12 +21,20 @@ class PLayerNav {
           return Positioned.fill(
             child: GetBuilder<FloatingViewController>(
                 init: FloatingViewController(),
+                global: true,
+                autoRemove: false,
                 builder: (model) {
+                  // var player = Player(
+                  //   key: Key('hahha'),
+                  //   usePlayerPlaceHolder: false,
+                  // );
                   return Material(
                     type: MaterialType.transparency,
                     color: Colors.transparent,
                     child: Stack(
                       children: [
+                        // if (model.isFullScreen) player,
+                        // if (!model.isFullScreen)
                         Obx(
                           () => IgnorePointer(
                             ignoring: !model.isMaximized.value,
@@ -37,6 +45,7 @@ class PLayerNav {
                             ),
                           ),
                         ),
+                        // if (!model.isFullScreen)
                         DraggableWidget(
                           onRemove: () {
                             clearViews();
@@ -48,7 +57,8 @@ class PLayerNav {
                           shadowBorderRadius: 0,
                           touchDelay: Duration(milliseconds: 100),
                           child: Player(
-                            usePlayerPlaceHolder: true,
+                            key: Key('hahha'),
+                            usePlayerPlaceHolder: false,
                           ),
                           initialPosition: AnchoringPosition.maximized,
                         ),
@@ -65,6 +75,7 @@ class PLayerNav {
     if (overlayEntry != null) {
       overlayEntry.remove();
       overlayEntry = null;
+      FloatingViewController().dispose();
       return false;
     }
     return true;

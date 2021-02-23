@@ -244,7 +244,7 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
               ? Container()
               : Listener(
                   onPointerUp: (v) {
-                    if (!isStillTouching) {
+                    if (!isStillTouching || _floatingViewController.isFullScreen) {
                       return;
                     }
                     isStillTouching = false;
@@ -268,10 +268,12 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                   onPointerDown: (v) async {
                     isStillTouching = false;
                     await Future<void>.delayed(widget.touchDelay);
-                    isStillTouching = true;
+                    if (!_floatingViewController.showControllerView.value) {
+                      isStillTouching = true;
+                    }
                   },
                   onPointerMove: (v) async {
-                    if (!isStillTouching) {
+                    if (!isStillTouching || _floatingViewController.isFullScreen) {
                       return;
                     }
                     if (animationController.isAnimating) {
@@ -368,6 +370,9 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
   final double initialWidth = Get.width;
 
   double getPlayerWidth() {
+    if (_floatingViewController.isFullScreen) {
+      return Get.width;
+    }
     return dragging
         ? initialWidth * (isAboveMaximizeGuideLine ? 1 : 0.5)
         : (currentDocker == null || currentDocker == AnchoringPosition.maximized)
@@ -378,6 +383,9 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
   bool get isAboveMaximizeGuideLine => (Get.height / 2) > top;
 
   double getPlayerHeight() {
+    if (_floatingViewController.isFullScreen) {
+      return Get.height;
+    }
     return dragging
         ? widget.initialHeight * (isAboveMaximizeGuideLine ? 1 : 0.5)
         : (currentDocker == null || currentDocker == AnchoringPosition.maximized)
@@ -402,7 +410,9 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
   void animateWidget(AnchoringPosition docker) {
     final double totalHeight = boundary;
     final double totalWidth = MediaQuery.of(context).size.width;
-
+    if (_floatingViewController.isFullScreen) {
+      return;
+    }
     switch (docker) {
       case AnchoringPosition.bottomLeft:
         double remaingDistanceY = (totalHeight - widgetHeight - hardTop);

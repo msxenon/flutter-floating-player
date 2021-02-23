@@ -1,34 +1,66 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
 
 class FloatingViewController extends GetxController {
   static const String detailsControllerId = 'detailsController1';
+  final Duration toggleOffDuration = const Duration(seconds: 5);
   VlcPlayerController videoPlayerController;
   RxBool isMaximized = true.obs;
   RxBool _showControllerView = false.obs;
   RxBool get showControllerView => _showControllerView;
   bool get showDetails => detailsTopPadding > 0;
   double detailsTopPadding = 0;
+  Size screenSize;
+  double initialHeight;
+  Timer controllerTimer;
+  bool isFullScreen = false;
+  FloatingViewController({this.screenSize}) {
+    if (screenSize?.width == null) {
+      screenSize = Size(Get.width, Get.height);
+    }
+    initialHeight = screenSize.width / (16 / 9);
+  }
   set showControllerViewValue(bool value) {
     _showControllerView.value = value && isMaximized.value;
   }
 
+  void toggleControllers() {
+    showControllerViewValue = (!_showControllerView.value);
+    if (_showControllerView.value) {
+      _startToggleOffTimer();
+    } else {
+      controllerTimer?.cancel();
+    }
+  }
+
+  VlcPlayerController createController() {
+    videoPlayerController = videoPlayerController = VlcPlayerController.network('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+        hwAcc: HwAcc.FULL, autoPlay: true, options: VlcPlayerOptions(), autoInitialize: true);
+    return videoPlayerController;
+  }
+
+  void minimize() {}
   @override
-  void onInit() {
-    videoPlayerController = VlcPlayerController.network(
-      'https://media.w3.org/2010/05/sintel/trailer.mp4',
-      hwAcc: HwAcc.FULL,
-      autoPlay: true,
-      options: VlcPlayerOptions(),
-    );
+  void onInit() async {
     super.onInit();
+    // await Future.delayed(Duration(seconds: 1));
+    // await videoPlayerController.initialize();
   }
 
   @override
   void onClose() {
-    videoPlayerController.stopRendererScanning();
-    videoPlayerController.removeListener(() {});
     super.onClose();
+  }
+
+  @override
+  void dispose() {
+    videoPlayerController?.stopRendererScanning();
+    videoPlayerController?.removeListener(() {});
+    controllerTimer?.cancel();
+    super.dispose();
   }
 
   void onMaximizedStateChange(bool _isMaximized) {
@@ -41,13 +73,24 @@ class FloatingViewController extends GetxController {
     detailsTopPadding = d;
     update(List.of([detailsControllerId]));
   }
-}
 
-class PlayerControllersController extends GetxController {
-  FloatingViewController _floatingViewController = Get.find();
-  bool get canShowControllers => _floatingViewController.isMaximized.value;
-  @override
-  void onInit() {
-    super.onInit();
+  void _startToggleOffTimer() {
+    controllerTimer = Timer(toggleOffDuration, () {
+      if (_showControllerView.value) {
+        showControllerViewValue = false;
+      }
+    });
+  }
+
+  void toggleFullScreen() {
+    // if (!isFullScreen) {
+    //   SystemChrome.setEnabledSystemUIOverlays([]);
+    //   SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
+    // } else {
+    //   SystemChrome.restoreSystemUIOverlays();
+    //   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
+    // }
+    isFullScreen = !isFullScreen;
+    update();
   }
 }

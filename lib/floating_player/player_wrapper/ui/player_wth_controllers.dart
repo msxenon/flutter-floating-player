@@ -2,7 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+import 'package:get/get.dart';
 
 import 'controls_overlay.dart';
 
@@ -21,7 +23,7 @@ class VlcPlayerWithControls extends StatefulWidget {
 
 class VlcPlayerWithControlsState extends State<VlcPlayerWithControls> with AutomaticKeepAliveClientMixin {
   VlcPlayerController _controller;
-  // final PlayerControllersController _floatingViewController = Get.find();
+  final FloatingViewController _floatingViewController = Get.find();
 
   //
   final double initSnapshotRightPosition = 10;
@@ -312,7 +314,7 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls> with Autom
                   IconButton(
                     icon: Icon(Icons.fullscreen),
                     color: Colors.white,
-                    onPressed: () {},
+                    onPressed: () => _floatingViewController.toggleFullScreen(),
                   ),
                 ],
               ),
