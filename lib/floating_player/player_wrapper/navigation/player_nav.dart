@@ -24,17 +24,11 @@ class PLayerNav {
                 global: true,
                 autoRemove: false,
                 builder: (model) {
-                  // var player = Player(
-                  //   key: Key('hahha'),
-                  //   usePlayerPlaceHolder: false,
-                  // );
                   return Material(
                     type: MaterialType.transparency,
                     color: Colors.transparent,
                     child: Stack(
                       children: [
-                        // if (model.isFullScreen) player,
-                        // if (!model.isFullScreen)
                         Obx(
                           () => IgnorePointer(
                             ignoring: !model.isMaximized.value,
@@ -57,7 +51,6 @@ class PLayerNav {
                           shadowBorderRadius: 0,
                           touchDelay: Duration(milliseconds: 100),
                           child: Player(
-                            key: Key('hahha'),
                             usePlayerPlaceHolder: false,
                           ),
                           initialPosition: AnchoringPosition.maximized,

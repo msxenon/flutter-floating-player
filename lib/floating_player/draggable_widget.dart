@@ -307,11 +307,10 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                       child: AnimatedContainer(
                           key: playerKey,
                           duration: widget.animatedViewsDuration,
-                          foregroundDecoration: BoxDecoration(color: _isAboutToDelete ? Colors.red : Colors.transparent),
+                          foregroundDecoration: BoxDecoration(color: _isAboutToDelete ? Colors.red.withOpacity(0.5) : Colors.transparent),
                           width: getPlayerWidth(),
                           height: getPlayerHeight(),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(widget.shadowBorderRadius),
                             boxShadow: [dragging ? widget.draggingShadow : widget.normalShadow],
                           ),
                           child: widget.child),

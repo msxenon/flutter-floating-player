@@ -272,13 +272,13 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls> with Autom
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  // IconButton(
-                  //   color: Colors.white,
-                  //   icon: _controller.value.isPlaying ? Icon(Icons.pause_circle_outline) : Icon(Icons.play_circle_outline),
-                  //   onPressed: () async {
-                  //     return _controller.value.isPlaying ? await _controller.pause() : await _controller.play();
-                  //   },
-                  // ),
+                  IconButton(
+                    color: Colors.white,
+                    icon: _controller.value.isPlaying ? Icon(Icons.pause_circle_outline) : Icon(Icons.play_circle_outline),
+                    onPressed: () async {
+                      return _controller.value.isPlaying ? await _controller.pause() : await _controller.play();
+                    },
+                  ),
                   Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
 
@@ -83,13 +84,22 @@ class FloatingViewController extends GetxController {
   }
 
   void toggleFullScreen() {
-    // if (!isFullScreen) {
-    //   SystemChrome.setEnabledSystemUIOverlays([]);
-    //   SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
-    // } else {
-    //   SystemChrome.restoreSystemUIOverlays();
-    //   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
-    // }
+    if (!isFullScreen) {
+      ///is going full screen
+      SystemChrome.setEnabledSystemUIOverlays([]);
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    } else {
+      SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
     isFullScreen = !isFullScreen;
     update();
   }
