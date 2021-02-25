@@ -34,7 +34,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        return PLayerNav.canPopup();
+        var playerMinimized = PLayerNav.canPopup();
+        return playerMinimized;
       },
       child: Scaffold(
         appBar: AppBar(

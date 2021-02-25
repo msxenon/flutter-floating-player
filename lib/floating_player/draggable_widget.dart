@@ -76,11 +76,12 @@ class DraggableWidget extends StatefulWidget {
 
   /// Touch Delay Duration. Default value is zero. When set, drag operations will trigger after the duration.
   final Duration touchDelay;
-
+  final AnchoringPosition preferredAnchorPos;
   DraggableWidget({
     Key key,
     this.child,
     this.initialHeight: 202,
+    this.preferredAnchorPos: AnchoringPosition.bottomRight,
     this.horizontalSapce = 0,
     this.animatedViewsDuration = const Duration(milliseconds: 150),
     this.deleteIconConfig = const DeleteIconConfig(),
@@ -218,7 +219,13 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
       });
     });
     _floatingViewController.setPlayerHeight(hardTop + getPlayerHeight());
-
+    _floatingViewController.isMaximized.listen((x) {
+      if (mounted && !dragging && !x) {
+        setState(() {
+          _animateTo(widget.preferredAnchorPos ?? AnchoringPosition.bottomLeft);
+        });
+      }
+    });
     super.initState();
   }
 

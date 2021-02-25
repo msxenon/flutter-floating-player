@@ -37,23 +37,20 @@ class FloatingViewController extends GetxController {
     }
   }
 
-  VlcPlayerController createController() {
-    videoPlayerController = videoPlayerController = VlcPlayerController.network('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-        hwAcc: HwAcc.FULL, autoPlay: true, options: VlcPlayerOptions(), autoInitialize: true);
+  VlcPlayerController createController({VlcPlayerController vlcPlayerController}) {
+    videoPlayerController = vlcPlayerController ??
+        VlcPlayerController.network('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+            hwAcc: HwAcc.FULL, autoPlay: true, options: VlcPlayerOptions(), autoInitialize: true);
     return videoPlayerController;
-  }
-
-  void minimize() {}
-  @override
-  void onInit() async {
-    super.onInit();
-    // await Future.delayed(Duration(seconds: 1));
-    // await videoPlayerController.initialize();
   }
 
   @override
   void onClose() {
     super.onClose();
+  }
+
+  void minimize() {
+    isMaximized(false);
   }
 
   @override

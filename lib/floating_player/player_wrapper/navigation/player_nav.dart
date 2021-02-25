@@ -10,10 +10,10 @@ class PLayerNav {
   static OverlayEntry overlayEntry;
 
   static void showPlayer(BuildContext ctx, WidgetBuilder player, WidgetBuilder details, {Color bgColor}) async {
-    if (!clearViews()) {
+    if (!clearViews(forceClear: true)) {
       await Future.delayed(Duration(milliseconds: 200));
     }
-    OverlayState overlayState = Overlay.of(ctx);
+
     overlayEntry = OverlayEntry(
         maintainState: true,
         opaque: false,
@@ -45,7 +45,7 @@ class PLayerNav {
                         // if (!model.isFullScreen)
                         DraggableWidget(
                           onRemove: () {
-                            clearViews();
+                            clearViews(forceClear: true);
                           },
                           bottomMargin: 80,
                           intialVisibility: true,
@@ -67,15 +67,25 @@ class PLayerNav {
                 }),
           );
         });
-    overlayState.insert(overlayEntry);
+    Overlay.of(ctx).insert(overlayEntry);
   }
 
-  static bool clearViews() {
-    if (overlayEntry != null) {
-      overlayEntry.remove();
-      overlayEntry = null;
-      FloatingViewController().dispose();
-      return false;
+  static bool clearViews({bool forceClear: false}) {
+    try {
+      final controller = Get.find<FloatingViewController>();
+      if (forceClear && overlayEntry != null) {
+        overlayEntry.remove();
+        overlayEntry = null;
+        controller.onClose();
+        return false;
+      } else {
+        if (controller.isMaximized.value) {
+          controller.minimize();
+          return false;
+        }
+      }
+    } catch (e) {
+      print(e);
     }
     return true;
   }
