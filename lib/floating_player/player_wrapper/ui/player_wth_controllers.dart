@@ -105,7 +105,7 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls> with Autom
           ),
         ),
         Visibility(
-          visible: canShowControllers,
+          visible: canShowControllers && _floatingViewController.isMaximized.value,
           child: Container(
             height: 50,
             color: Colors.black87,

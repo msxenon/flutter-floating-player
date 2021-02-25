@@ -153,6 +153,8 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
   bool get currentVisibility => visible ?? widget.intialVisibility;
 
   bool isStillTouching;
+
+  PointerDownEvent _downPointer;
   @override
   void dispose() {
     animationController?.dispose();
@@ -250,7 +252,7 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                     isStillTouching = false;
 
                     final p = v.position;
-                    currentDocker = determineDocker(p.dx, p.dy);
+                    currentDocker = determineDocker(p);
 
                     setState(() {
                       dragging = false;
@@ -267,6 +269,7 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                   },
                   onPointerDown: (v) async {
                     isStillTouching = false;
+                    _downPointer = v;
                     await Future<void>.delayed(widget.touchDelay);
                     if (!_floatingViewController.showControllerView.value) {
                       isStillTouching = true;
@@ -280,21 +283,22 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                       animationController.stop();
                       animationController.reset();
                     }
+                    if (dragging == true || v.delta.distanceSquared > _downPointer.delta.distanceSquared) {
+                      setState(() {
+                        dragging = true;
+                        _floatingViewController.onDraggingChange(dragging);
+                        if (v.position.dy < boundary && v.position.dy > topMargin) {
+                          top = max(v.position.dy - (widgetHeight) / 2, topMargin);
+                        }
 
-                    setState(() {
-                      dragging = true;
-                      _floatingViewController.onDraggingChange(dragging);
-                      if (v.position.dy < boundary && v.position.dy > topMargin) {
-                        top = max(v.position.dy - (widgetHeight) / 2, topMargin);
-                      }
+                        left = max(v.position.dx - (widgetWidth), 0);
 
-                      left = max(v.position.dx - (widgetWidth), 0);
-
-                      hardLeft = left;
-                      hardTop = top;
-                    });
-                    _floatingViewController.onMaximizedStateChange(top == topMargin);
-                    isAboutToDelete = isInsideDeleteRect();
+                        hardLeft = left;
+                        hardTop = top;
+                      });
+                      _floatingViewController.onMaximizedStateChange(top == topMargin);
+                      isAboutToDelete = isInsideDeleteRect();
+                    }
                   },
                   child: Offstage(
                     offstage: offstage,
@@ -392,18 +396,32 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
             : widget.initialHeight * 0.3;
   }
 
-  AnchoringPosition determineDocker(double x, double y) {
-    final double totalHeight = boundary;
-    final double totalWidth = MediaQuery.of(context).size.width;
-    if (isAboveMaximizeGuideLine) {
-      return AnchoringPosition.maximized;
-    } else if (x < totalWidth / 2 && y > totalHeight / 3) {
-      return AnchoringPosition.bottomLeft;
-    } else if (x > totalWidth / 2 && y > totalHeight / 3) {
-      return AnchoringPosition.bottomRight;
+  AnchoringPosition determineDocker(Offset upPos) {
+    if (_downPointer == null || !dragging) {
+      return _currentlyDocked;
+    }
+    // print('determineDocker down:${_downPointer.position.dy}, up:${upPos.dy}');
+    if (_downPointer.position.dy < upPos.dy || _downPointer.position.dy - upPos.dy < 200) {
+      final double totalHeight = boundary;
+      final double totalWidth = MediaQuery.of(context).size.width;
+      if (upPos.dx < totalWidth / 2 && upPos.dy > totalHeight / 3) {
+        return AnchoringPosition.bottomLeft;
+      } else {
+        return AnchoringPosition.bottomRight;
+      }
     } else {
       return AnchoringPosition.maximized;
     }
+
+    // if (isAboveMaximizeGuideLine) {
+    //   return AnchoringPosition.maximized;
+    // } else if (x < totalWidth / 2 && y > totalHeight / 3) {
+    //   return AnchoringPosition.bottomLeft;
+    // } else if (x > totalWidth / 2 && y > totalHeight / 3) {
+    //   return AnchoringPosition.bottomRight;
+    // } else {
+    //   return AnchoringPosition.maximized;
+    // }
   }
 
   void animateWidget(AnchoringPosition docker) {

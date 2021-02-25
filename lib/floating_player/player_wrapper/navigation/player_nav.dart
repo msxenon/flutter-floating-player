@@ -36,7 +36,7 @@ class PLayerNav {
                               duration: Duration(milliseconds: 250),
                               opacity: model.isMaximized.value ? 1 : 0,
                               child: PLayerDetails(
-                                child: details(context),
+                                child: details,
                                 bgColor: bgColor,
                               ),
                             ),
