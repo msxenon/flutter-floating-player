@@ -17,6 +17,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MyHomePage(),
+      popGesture: true,
     );
   }
 }
@@ -30,31 +31,70 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  Widget player;
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        var playerMinimized = PLayerNav.canPopup();
-        return playerMinimized;
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              RaisedButton(
-                onPressed: () {
-                  PLayerNav.showPlayer(context, null, null);
-                },
-                child: Text('Open Floating Player Screen'),
-              ),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            RaisedButton(
+              onPressed: () {
+                Get.to(SecondPage(
+                  title: 'Dynamic Page',
+                ));
+              },
+              child: Text('Open Dynamic Pages'),
+            ),
+          ],
         ),
       ),
-    );
+    ).attachPLayerAware();
+  }
+}
+
+class SecondPage extends StatefulWidget {
+  SecondPage({Key key, this.title: 'No title'}) : super(key: key);
+  final String title;
+
+  @override
+  _SecState createState() => _SecState();
+}
+
+class _SecState extends State<SecondPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            RaisedButton(
+              onPressed: () {
+                PLayerNav.showPlayer(context, null, null);
+              },
+              child: Text('Open Floating Player Screen'),
+            ),
+            RaisedButton(
+              onPressed: () {
+                Get.to(
+                    SecondPage(
+                      title: widget.title + ' |',
+                    ),
+                    preventDuplicates: false);
+              },
+              child: Text('Open New Page'),
+            ),
+          ],
+        ),
+      ),
+    ).attachPLayerAware();
   }
 }

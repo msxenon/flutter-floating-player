@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_player/floating_player/draggable_widget.dart';
-import 'package:flutter_player/floating_player/player_wrapper/ui/details/player_details.dart';
-import 'package:flutter_player/floating_player/player_wrapper/ui/player.dart';
+import 'package:flutter_player/floating_player/player_wrapper/ui/floating_player.dart';
 import 'package:get/get.dart';
 
 import '../controllers/video_view_controller.dart';
@@ -13,61 +11,20 @@ class PLayerNav {
     if (!clearViews(forceClear: true)) {
       await Future.delayed(Duration(milliseconds: 200));
     }
-
     overlayEntry = OverlayEntry(
         maintainState: true,
         opaque: false,
         builder: (context) {
-          return Positioned.fill(
-            child: GetBuilder<FloatingViewController>(
-                init: FloatingViewController(),
-                global: true,
-                autoRemove: false,
-                builder: (model) {
-                  return Material(
-                    type: MaterialType.transparency,
-                    color: Colors.transparent,
-                    child: Stack(
-                      children: [
-                        Obx(
-                          () => IgnorePointer(
-                            ignoring: !model.isMaximized.value,
-                            child: AnimatedOpacity(
-                              duration: Duration(milliseconds: 250),
-                              opacity: model.isMaximized.value ? 1 : 0,
-                              child: PLayerDetails(
-                                child: details,
-                                bgColor: bgColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                        // if (!model.isFullScreen)
-                        DraggableWidget(
-                          onRemove: () {
-                            clearViews(forceClear: true);
-                          },
-                          bottomMargin: 80,
-                          intialVisibility: true,
-                          horizontalSapce: 0,
-                          dragAnimationScale: 0.5,
-                          shadowBorderRadius: 0,
-                          initialHeight: model.initialHeight,
-                          touchDelay: Duration(milliseconds: 100),
-                          child: player != null
-                              ? player(context)
-                              : Player(
-                                  usePlayerPlaceHolder: false,
-                                ),
-                          initialPosition: AnchoringPosition.maximized,
-                        ),
-                      ],
-                    ),
-                  );
-                }),
+          return FloatingWrapper(
+            onRemove: () {
+              clearViews(forceClear: true);
+            },
+            player: player,
+            details: details,
+            bgColor: bgColor,
           );
         });
-    Overlay.of(ctx).insert(overlayEntry);
+    Overlay.of(ctx, rootOverlay: false).insert(overlayEntry);
   }
 
   static bool clearViews({bool forceClear: false}) {
@@ -85,7 +42,7 @@ class PLayerNav {
         }
       }
     } catch (e) {
-      print(e);
+      // print(e);
     }
     return true;
   }
@@ -93,4 +50,24 @@ class PLayerNav {
   static bool canPopup() {
     return clearViews();
   }
+}
+
+class PlayerAwareScaffold extends StatelessWidget {
+  final Widget child;
+
+  const PlayerAwareScaffold({Key key, this.child}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+        child: child,
+        onWillPop: () async {
+          return PLayerNav.clearViews();
+        });
+  }
+}
+
+extension ScaffoldExts on Scaffold {
+  Widget attachPLayerAware() => PlayerAwareScaffold(
+        child: this,
+      );
 }
