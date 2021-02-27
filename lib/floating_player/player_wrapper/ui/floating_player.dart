@@ -19,12 +19,11 @@ class FloatingWrapper extends StatefulWidget {
 }
 
 class _FloatingWrapperState extends State<FloatingWrapper> {
-  final FloatingViewController floatingViewController = Get.put(FloatingViewController(), permanent: true);
-
-  OverlayEntry myOverlay;
+  FloatingViewController floatingViewController = Get.put(FloatingViewController());
   @override
   void dispose() {
     floatingViewController.onClose();
+    print('_FloatingWrapperState disposseddd');
     super.dispose();
   }
 
@@ -32,8 +31,7 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
   Widget build(BuildContext context) {
     return GetBuilder<FloatingViewController>(
         init: floatingViewController,
-        global: true,
-        autoRemove: false,
+        autoRemove: true,
         builder: (model) {
           return Material(
             type: MaterialType.transparency,
@@ -45,7 +43,7 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
                     ignoring: !model.isMaximized.value,
                     child: AnimatedOpacity(
                       duration: Duration(milliseconds: 250),
-                      opacity: model.isMaximized.value ? 1 : 0,
+                      opacity: (model.isMaximized.value && !model.dragging.value) ? 1 : 0,
                       child: PLayerDetails(
                         child: widget.details,
                         bgColor: widget.bgColor,
@@ -53,23 +51,22 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
                     ),
                   ),
                 ),
-                if (!model.isFullScreen)
-                  DraggableWidget(
-                    onRemove: widget.onRemove,
-                    bottomMargin: widget.bottomMargin,
-                    intialVisibility: true,
-                    horizontalSapce: 0,
-                    dragAnimationScale: 0.5,
-                    shadowBorderRadius: 0,
-                    initialHeight: model.initialHeight,
-                    touchDelay: Duration(milliseconds: 100),
-                    child: widget.player != null
-                        ? widget.player(context)
-                        : Player(
-                            usePlayerPlaceHolder: false,
-                          ),
-                    initialPosition: AnchoringPosition.maximized,
-                  ),
+                DraggableWidget(
+                  onRemove: widget.onRemove,
+                  bottomMargin: widget.bottomMargin,
+                  intialVisibility: true,
+                  horizontalSapce: 0,
+                  dragAnimationScale: 0.5,
+                  shadowBorderRadius: 0,
+                  initialHeight: model.initialHeight,
+                  touchDelay: Duration(milliseconds: 100),
+                  child: widget.player != null
+                      ? widget.player(context)
+                      : Player(
+                          usePlayerPlaceHolder: false,
+                        ),
+                  initialPosition: AnchoringPosition.maximized,
+                ),
               ],
             ),
           );

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
 import 'package:get/get.dart';
 
-enum AnchoringPosition { bottomLeft, bottomRight, maximized }
+enum AnchoringPosition { minimized, maximized, fullScreen }
 
 class DeleteIconConfig {
   final double maxSize;
@@ -76,17 +76,15 @@ class DraggableWidget extends StatefulWidget {
 
   /// Touch Delay Duration. Default value is zero. When set, drag operations will trigger after the duration.
   final Duration touchDelay;
-  final AnchoringPosition preferredAnchorPos;
   DraggableWidget({
     Key key,
     this.child,
     this.initialHeight: 202,
-    this.preferredAnchorPos: AnchoringPosition.bottomRight,
     this.horizontalSapce = 0,
     this.animatedViewsDuration = const Duration(milliseconds: 150),
     this.deleteIconConfig = const DeleteIconConfig(),
     this.verticalSpace = 0,
-    this.initialPosition = AnchoringPosition.bottomRight,
+    this.initialPosition = AnchoringPosition.maximized,
     this.intialVisibility = true,
     this.bottomMargin = 0,
     this.topSafeMargin = true,
@@ -122,50 +120,38 @@ class DraggableWidget extends StatefulWidget {
 
 class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderStateMixin {
   FloatingViewController _floatingViewController = Get.find();
-  bool get isMinimized => currentDocker != null && currentDocker != AnchoringPosition.maximized;
   final playerKey = GlobalKey();
   final deleteAreaKey = GlobalKey();
   bool _isAboutToDelete = false;
   double top = 0, left = 0;
   double boundary = 0;
   AnimationController animationController;
-  AnimationController _deleteWidgetAnimation;
   Animation animation;
   double hardLeft = 0, hardTop = 0;
   bool offstage = true;
   double get topMargin => widget.topSafeMargin ? Get.mediaQuery.padding.top : 0;
-  AnchoringPosition currentDocker;
-
+  double closePercentage = 0;
   double get widgetHeight => getPlayerHeight();
   double get widgetWidth => getPlayerWidth();
 
-  bool dragging = false;
-
-  AnchoringPosition _currentlyDocked;
-  AnchoringPosition get currentlyDocked => _currentlyDocked;
-
-  set currentlyDocked(AnchoringPosition value) {
-    _currentlyDocked = value;
-    _floatingViewController.onMaximizedStateChange(!isMinimized);
-  }
+  AnchoringPosition get currentlyDocked => _floatingViewController.anchoringPosition.value;
 
   bool visible;
 
   bool get currentVisibility => visible ?? widget.intialVisibility;
 
   bool isStillTouching;
-
-  PointerDownEvent _downPointer;
+  double lastCaseYPos = 0;
+  TapDownDetails _downPointer;
   @override
   void dispose() {
     animationController?.dispose();
-    _deleteWidgetAnimation?.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
-    currentlyDocked = widget.initialPosition;
+    // _currentDocked = widget.initialPosition;
     hardTop = topMargin;
     animationController = AnimationController(
       value: 1,
@@ -173,7 +159,7 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
       duration: widget.animatedViewsDuration,
     )
       ..addListener(() {
-        if (currentDocker != null) animateWidget(currentDocker);
+        animateWidget(currentlyDocked);
       })
       ..addStatusListener(
         (status) {
@@ -183,12 +169,6 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
           }
         },
       );
-    _deleteWidgetAnimation = AnimationController(
-      value: 0,
-      vsync: this,
-      duration: widget.animatedViewsDuration,
-    );
-
     animation = Tween<double>(
       begin: 0,
       end: 1,
@@ -206,12 +186,9 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
       setState(() {
         offstage = false;
         boundary = MediaQuery.of(context).size.height - widget.bottomMargin;
-        if (widget.initialPosition == AnchoringPosition.bottomRight) {
+        if (widget.initialPosition == AnchoringPosition.minimized) {
           top = boundary - widgetHeight + widget.statusBarHeight;
           left = MediaQuery.of(context).size.width - widgetWidth;
-        } else if (widget.initialPosition == AnchoringPosition.bottomLeft) {
-          top = boundary - widgetHeight + widget.statusBarHeight;
-          left = 0;
         } else {
           top = topMargin;
           left = 0;
@@ -219,11 +196,10 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
       });
     });
     _floatingViewController.setPlayerHeight(hardTop + getPlayerHeight());
-    _floatingViewController.isMaximized.listen((x) {
-      if (mounted && !dragging && !x) {
-        setState(() {
-          _animateTo(widget.preferredAnchorPos ?? AnchoringPosition.bottomLeft);
-        });
+    _floatingViewController.anchoringPosition.listen((x) {
+      print('draggable listener $x --- $mounted -- maximi => ${_floatingViewController.isMaximized.value} - drag => ${_floatingViewController.dragging.value}');
+      if (mounted) {
+        _animateTo(x);
       }
     });
     super.initState();
@@ -244,226 +220,213 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    var currentPost = top - widget.statusBarHeight;
+    var res = currentPost / (boundary - widget.initialHeight);
+    var percentage = max(0.2, 1.0 - res);
     return Stack(
       children: [
         Positioned(
-          top: top,
+          top: _floatingViewController.isFullScreen.value ? top - widget.statusBarHeight : top,
           left: left,
           child: (!currentVisibility)
               ? Container()
-              : Listener(
-                  onPointerUp: (v) {
-                    if (!isStillTouching || _floatingViewController.isFullScreen) {
-                      return;
-                    }
-                    isStillTouching = false;
+              : Transform.scale(
+                  alignment: Alignment.bottomRight,
+                  scale: _floatingViewController.isFullScreen.value ? 1 : percentage,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onDoubleTap: () {
+                      if (currentlyDocked == AnchoringPosition.minimized) {
+                        _animateTo(AnchoringPosition.maximized);
+                      } else {
+                        _animateTo(AnchoringPosition.minimized);
+                      }
+                    },
+                    onTapDown: (v) async {
+                      isStillTouching = false;
+                      _downPointer = v;
+                      await Future<void>.delayed(widget.touchDelay);
+                      if (!_floatingViewController.showControllerView.value) {
+                        isStillTouching = true;
+                      }
+                    },
+                    onVerticalDragEnd: (v) {
+                      _floatingViewController.dragging(false);
+                      if (_floatingViewController.isFullScreen.value) {
+                        return;
+                      }
+                      isStillTouching = false;
 
-                    final p = v.position;
-                    currentDocker = determineDocker(p);
+                      final p = Offset(left, top);
+                      bool switchPos = v.velocity.pixelsPerSecond.dy.abs() > 7000.0 ? true : false;
+                      _floatingViewController.anchoringPosition(determineDocker(p, switchPos || (top - lastCaseYPos).abs() > 100));
 
-                    setState(() {
-                      dragging = false;
-                    });
-                    _floatingViewController.onDraggingChange(dragging);
-                    if (animationController.isAnimating) {
-                      animationController.stop();
-                    }
-                    animationController.reset();
-                    animationController.forward();
-                    if (_isAboutToDelete) {
-                      widget.onRemove();
-                    }
-                  },
-                  onPointerDown: (v) async {
-                    isStillTouching = false;
-                    _downPointer = v;
-                    await Future<void>.delayed(widget.touchDelay);
-                    if (!_floatingViewController.showControllerView.value) {
-                      isStillTouching = true;
-                    }
-                  },
-                  onPointerMove: (v) async {
-                    if (!isStillTouching || _floatingViewController.isFullScreen) {
-                      return;
-                    }
-                    if (animationController.isAnimating) {
-                      animationController.stop();
+                      if (animationController.isAnimating) {
+                        animationController.stop();
+                      }
                       animationController.reset();
-                    }
-                    if (dragging == true || v.delta.distanceSquared > _downPointer.delta.distanceSquared) {
-                      setState(() {
-                        dragging = true;
-                        _floatingViewController.onDraggingChange(dragging);
-                        if (v.position.dy < boundary && v.position.dy > topMargin) {
-                          top = max(v.position.dy - (widgetHeight) / 2, topMargin);
-                        }
+                      animationController.forward();
+                    },
+                    onVerticalDragUpdate: (v) async {
+                      if (_floatingViewController.isFullScreen.value) {
+                        return;
+                      }
+                      _floatingViewController.dragging(true);
 
-                        left = max(v.position.dx - (widgetWidth), 0);
+                      if (animationController.isAnimating) {
+                        animationController.stop();
+                        animationController.reset();
+                      }
+                      setState(() {
+                        var pos = v.globalPosition.dy - (widgetHeight) / 2;
+                        if (pos < (boundary - (widget.initialHeight)) && v.globalPosition.dy > topMargin) {
+                          top = max(pos, topMargin);
+                        }
+                        left = max(v.globalPosition.dx - (widgetWidth), 0);
 
                         hardLeft = left;
                         hardTop = top;
                       });
-                      _floatingViewController.onMaximizedStateChange(top == topMargin);
-                      isAboutToDelete = isInsideDeleteRect();
-                    }
-                  },
-                  child: Offstage(
-                    offstage: offstage,
-                    child: Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: widget.horizontalSapce,
-                        vertical: widget.verticalSpace,
-                      ),
-                      child: AnimatedContainer(
-                          key: playerKey,
-                          duration: widget.animatedViewsDuration,
-                          foregroundDecoration: BoxDecoration(color: _isAboutToDelete ? Colors.red.withOpacity(0.5) : Colors.transparent),
-                          width: getPlayerWidth(),
-                          height: getPlayerHeight(),
-                          decoration: BoxDecoration(
-                            boxShadow: [dragging ? widget.draggingShadow : widget.normalShadow],
+                    },
+                    onHorizontalDragUpdate: (f) {
+                      _floatingViewController.dragging(true);
+                      left = left + f.primaryDelta;
+                      if (left <= hardLeft) {
+                        closePercentage = hardLeft > 0
+                            ? 1 - (left / hardLeft).abs()
+                            : left.abs() > 200
+                                ? 1
+                                : 0;
+                        setState(() {});
+                      } else {
+                        left = hardLeft;
+                      }
+                    },
+                    onHorizontalDragEnd: (f) {
+                      if (closePercentage == 1) {
+                        widget.onRemove();
+                      }
+                      _animateTo(currentlyDocked);
+                    },
+                    child: Offstage(
+                      offstage: offstage,
+                      child: Container(
+                          alignment: Alignment.bottomRight,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: widget.horizontalSapce,
+                            vertical: widget.verticalSpace,
                           ),
-                          child: widget.child),
+                          child: AnimatedContainer(
+                              key: playerKey,
+                              duration: widget.animatedViewsDuration,
+                              foregroundDecoration: BoxDecoration(color: _isAboutToDelete ? Colors.red.withOpacity(0.5) : Colors.transparent),
+                              width: getPlayerWidth(),
+                              height: getPlayerHeight(),
+                              decoration: BoxDecoration(
+                                boxShadow: [_floatingViewController.dragging.value ? widget.draggingShadow : widget.normalShadow],
+                              ),
+                              child: Stack(fit: StackFit.expand, alignment: Alignment.center, children: [
+                                widget.child,
+                                IgnorePointer(
+                                  ignoring: true,
+                                  child: AnimatedOpacity(
+                                    opacity: closePercentage,
+                                    duration: widget.animatedViewsDuration,
+                                    child: Container(
+                                      key: deleteAreaKey,
+                                      padding: const EdgeInsets.all(8),
+                                      color: Colors.black87,
+                                      child: FittedBox(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(20),
+                                          child: Text(
+                                            'Close'.tr,
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ]))),
                     ),
                   ),
                 ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(bottom: widget.bottomMargin),
-          child: AnimatedBuilder(
-            animation: _deleteWidgetAnimation,
-            builder: (_, child) {
-              double percentage = _deleteWidgetAnimation.value;
-              return Align(
-                child: AnimatedOpacity(
-                  opacity: dragging ? 0.7 : 0,
-                  duration: widget.animatedViewsDuration,
-                  child: Container(
-                    key: deleteAreaKey,
-                    padding: const EdgeInsets.all(8),
-                    child: Icon(
-                      widget.deleteIconConfig.icon,
-                      color: widget.deleteIconConfig.iconColor,
-                      size: getValueFromPercentage(widget.deleteIconConfig.minSize, widget.deleteIconConfig.maxSize, percentage),
-                    ),
-                    decoration: BoxDecoration(
-                        color: widget.deleteIconConfig.backgroundColor,
-                        border: Border.all(
-                          color: widget.deleteIconConfig.iconColor,
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(50))),
-                  ),
-                ),
-                alignment: Alignment.bottomCenter,
-              );
-            },
-          ),
         ),
       ],
     );
   }
 
-  double getValueFromPercentage(double min, double max, double percentage) {
-    double diff = max - min;
-    return (percentage * diff) + min;
-  }
-
-  set isAboutToDelete(bool delete) {
-    if (delete == _isAboutToDelete) {
-      return;
-    }
-    _isAboutToDelete = delete;
-    _deleteWidgetAnimation.animateTo(_isAboutToDelete ? 1 : 0);
-  }
-
   final double initialWidth = Get.width;
 
   double getPlayerWidth() {
-    if (_floatingViewController.isFullScreen) {
-      return Get.width;
-    }
-    return dragging
-        ? initialWidth * (isAboveMaximizeGuideLine ? 1 : 0.5)
-        : (currentDocker == null || currentDocker == AnchoringPosition.maximized)
-            ? initialWidth
-            : initialWidth * 0.3;
+    return Get.width;
+    // if (_floatingViewController.isFullScreen) {
+    //   return Get.width;
+    // }
+    // return dragging
+    //     ? initialWidth
+    //     : (currentDocker == null || currentDocker == AnchoringPosition.maximized)
+    //         ? initialWidth
+    //         : initialWidth * 0.3;
   }
 
   bool get isAboveMaximizeGuideLine => (Get.height / 2) > top;
 
   double getPlayerHeight() {
-    if (_floatingViewController.isFullScreen) {
+    if (_floatingViewController.isFullScreen.value) {
       return Get.height;
+    } else {
+      return widget.initialHeight;
     }
-    return dragging
-        ? widget.initialHeight * (isAboveMaximizeGuideLine ? 1 : 0.5)
-        : (currentDocker == null || currentDocker == AnchoringPosition.maximized)
-            ? widget.initialHeight
-            : widget.initialHeight * 0.3;
+    // return dragging
+    //     ? widget.initialHeight * (isAboveMaximizeGuideLine ? 1 : 0.5)
+    //     : (currentDocker == null || currentDocker == AnchoringPosition.maximized)
+    //         ? widget.initialHeight
+    //         : widget.initialHeight * 0.3;
   }
 
-  AnchoringPosition determineDocker(Offset upPos) {
-    if (_downPointer == null || !dragging) {
-      return _currentlyDocked;
-    }
-    // print('determineDocker down:${_downPointer.position.dy}, up:${upPos.dy}');
-    if (_downPointer.position.dy < upPos.dy || _downPointer.position.dy - upPos.dy < 200) {
-      final double totalHeight = boundary;
-      final double totalWidth = MediaQuery.of(context).size.width;
-      if (upPos.dx < totalWidth / 2 && upPos.dy > totalHeight / 3) {
-        return AnchoringPosition.bottomLeft;
+  AnchoringPosition determineDocker(Offset upPos, bool switchPos) {
+    if (switchPos) {
+      if (currentlyDocked == AnchoringPosition.maximized) {
+        return AnchoringPosition.minimized;
       } else {
-        return AnchoringPosition.bottomRight;
+        return AnchoringPosition.maximized;
       }
+    }
+    if (_downPointer.globalPosition.dy < upPos.dy || _downPointer.globalPosition.dy - upPos.dy < 200) {
+      return AnchoringPosition.minimized;
     } else {
       return AnchoringPosition.maximized;
     }
-
-    // if (isAboveMaximizeGuideLine) {
-    //   return AnchoringPosition.maximized;
-    // } else if (x < totalWidth / 2 && y > totalHeight / 3) {
-    //   return AnchoringPosition.bottomLeft;
-    // } else if (x > totalWidth / 2 && y > totalHeight / 3) {
-    //   return AnchoringPosition.bottomRight;
-    // } else {
-    //   return AnchoringPosition.maximized;
-    // }
   }
 
   void animateWidget(AnchoringPosition docker) {
     final double totalHeight = boundary;
-    final double totalWidth = MediaQuery.of(context).size.width;
-    if (_floatingViewController.isFullScreen) {
+    final double totalWidth = Get.width;
+    if (_floatingViewController.isFullScreen.value) {
       return;
     }
     switch (docker) {
-      case AnchoringPosition.bottomLeft:
-        double remaingDistanceY = (totalHeight - widgetHeight - hardTop);
-        setState(() {
-          left = (1 - animation.value) * hardLeft;
-          top = hardTop + (animation.value) * remaingDistanceY + (widget.statusBarHeight * animation.value);
-          currentlyDocked = AnchoringPosition.bottomLeft;
-        });
-        break;
-      case AnchoringPosition.bottomRight:
+      case AnchoringPosition.minimized:
         double remaingDistanceX = (totalWidth - widgetWidth - hardLeft);
         double remaingDistanceY = (totalHeight - widgetHeight - hardTop);
         setState(() {
           left = hardLeft + (animation.value) * remaingDistanceX;
-          top = hardTop + (animation.value) * remaingDistanceY + (widget.statusBarHeight * animation.value);
-          currentlyDocked = AnchoringPosition.bottomRight;
+          top = hardTop + (animation.value) * remaingDistanceY + (animation.value);
+          _floatingViewController.anchoringPosition(AnchoringPosition.minimized);
         });
         break;
       case AnchoringPosition.maximized:
         setState(() {
           left = 0;
           top = topMargin;
-          currentlyDocked = AnchoringPosition.maximized;
+          _floatingViewController.anchoringPosition(AnchoringPosition.maximized);
         });
         break;
       default:
     }
+    lastCaseYPos = top;
   }
 
   void _showWidget() {
@@ -482,8 +445,10 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
     if (animationController.isAnimating) {
       animationController.stop();
     }
+    closePercentage = 0;
     animationController.reset();
-    currentDocker = anchoringPosition;
+    _floatingViewController.dragging(false);
+    _floatingViewController.anchoringPosition(anchoringPosition);
     animationController.forward();
   }
 
@@ -499,7 +464,6 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
     var x = getDeleteReact();
     var playerRect = getPlayerRect();
     var size = x.intersect(playerRect).size;
-    // dev.log('isInsideDeleteRect ${size.toString()}');
     return !size.isEmpty;
   }
 
@@ -545,4 +509,9 @@ extension GlobalKeyExtension on GlobalKey {
       return Rect.zero;
     }
   }
+}
+
+double getValueFromPercentage(double min, double max, double percentage) {
+  double diff = max - min;
+  return (percentage * diff) + min;
 }

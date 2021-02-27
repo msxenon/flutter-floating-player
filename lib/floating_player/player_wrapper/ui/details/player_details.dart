@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
+import 'package:get/get.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
 
 class PLayerDetails extends StatelessWidget {
@@ -10,15 +11,14 @@ class PLayerDetails extends StatelessWidget {
     this.child,
     this.bgColor,
   }) : super(key: key);
-
+  final FloatingViewController floatingViewController = Get.find();
   @override
   Widget build(BuildContext context) {
     return Container(
       color: bgColor ?? Colors.black,
       constraints: BoxConstraints.expand(),
       child: GetBuilder<FloatingViewController>(
-        id: FloatingViewController.detailsControllerId,
-        init: FloatingViewController(),
+        init: floatingViewController,
         builder: (FloatingViewController model) {
           return Container(
             color: Colors.black,

@@ -30,14 +30,17 @@ class PLayerNav {
 
   static bool clearViews({bool forceClear: false}) {
     try {
-      final controller = Get.find<FloatingViewController>();
+      print('clearView called $forceClear ${overlayEntry != null} ');
       if (forceClear && overlayEntry != null) {
         overlayEntry.remove();
         overlayEntry = null;
-        controller.onClose();
         return false;
-      } else {
-        if (controller.isMaximized.value) {
+      } else if (overlayEntry != null) {
+        final controller = Get.find<FloatingViewController>();
+        if (controller.isFullScreen.value) {
+          controller.toggleFullScreen();
+          return false;
+        } else if (controller.isMaximized.value) {
           controller.minimize();
           return false;
         }

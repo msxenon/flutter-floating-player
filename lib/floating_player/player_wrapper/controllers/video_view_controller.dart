@@ -5,11 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
 
+import '../../draggable_widget.dart';
+
 class FloatingViewController extends GetxController {
-  static const String detailsControllerId = 'detailsController1';
   final Duration toggleOffDuration = const Duration(seconds: 5);
   VlcPlayerController videoPlayerController;
-  RxBool isMaximized = true.obs;
   RxBool _showControllerView = false.obs;
   RxBool get showControllerView => _showControllerView;
   bool get showDetails => detailsTopPadding > 0;
@@ -17,12 +17,35 @@ class FloatingViewController extends GetxController {
   Size screenSize;
   double initialHeight;
   Timer controllerTimer;
-  bool isFullScreen = false;
+  var anchoringPosition = AnchoringPosition.maximized.obs;
+  var isFullScreen = false.obs;
+  RxBool isMaximized = true.obs;
+  var dragging = false.obs;
+  var controllersCanBeVisible = true.obs;
+  @override
+  onInit() {
+    anchoringPosition.value = AnchoringPosition.maximized;
+    dragging.value = false;
+    super.onInit();
+  }
+
   FloatingViewController({this.screenSize}) {
     if (screenSize?.width == null) {
       screenSize = Size(Get.width, Get.height);
     }
     initialHeight = screenSize.width / (16 / 9);
+    anchoringPosition.listen((x) {
+      print('anchoringPosition changed $x');
+    });
+    ever(anchoringPosition, (f) {
+      isMaximized(anchoringPosition.value == AnchoringPosition.maximized);
+      isFullScreen(anchoringPosition.value == AnchoringPosition.fullScreen);
+      controllersCanBeVisible(!dragging.value && anchoringPosition.value != AnchoringPosition.minimized);
+    });
+
+    ever(dragging, (f) {
+      controllersCanBeVisible(!dragging.value && anchoringPosition.value != AnchoringPosition.minimized);
+    });
   }
   set showControllerViewValue(bool value) {
     _showControllerView.value = value && isMaximized.value;
@@ -46,11 +69,12 @@ class FloatingViewController extends GetxController {
 
   @override
   void onClose() {
+    normalScreenOptions();
     super.onClose();
   }
 
   void minimize() {
-    isMaximized(false);
+    anchoringPosition(AnchoringPosition.minimized);
   }
 
   @override
@@ -58,18 +82,15 @@ class FloatingViewController extends GetxController {
     videoPlayerController?.stopRendererScanning();
     videoPlayerController?.removeListener(() {});
     controllerTimer?.cancel();
+    normalScreenOptions();
     super.dispose();
-  }
-
-  void onMaximizedStateChange(bool _isMaximized) {
-    isMaximized.value = _isMaximized;
   }
 
   void onDraggingChange(bool dragging) {}
 
   void setPlayerHeight(double d) {
     detailsTopPadding = d;
-    update(List.of([detailsControllerId]));
+    update();
   }
 
   void _startToggleOffTimer() {
@@ -81,7 +102,9 @@ class FloatingViewController extends GetxController {
   }
 
   void toggleFullScreen() {
-    if (!isFullScreen) {
+    if (!isFullScreen.value) {
+      anchoringPosition(AnchoringPosition.fullScreen);
+
       ///is going full screen
       SystemChrome.setEnabledSystemUIOverlays([]);
       SystemChrome.setPreferredOrientations([
@@ -91,13 +114,17 @@ class FloatingViewController extends GetxController {
         DeviceOrientation.portraitDown,
       ]);
     } else {
-      SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
+      anchoringPosition(AnchoringPosition.maximized);
+      normalScreenOptions();
     }
-    isFullScreen = !isFullScreen;
     update();
+  }
+
+  void normalScreenOptions() {
+    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
   }
 }
