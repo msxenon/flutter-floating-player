@@ -7,7 +7,7 @@ import '../controllers/video_view_controller.dart';
 class PLayerNav {
   static OverlayEntry overlayEntry;
 
-  static void showPlayer(BuildContext ctx, WidgetBuilder player, WidgetBuilder details, {Color bgColor}) async {
+  static void showPlayer(BuildContext ctx, WidgetBuilder player, WidgetBuilder details, {Color bgColor, double bottomMargin: 80}) async {
     if (!clearViews(forceClear: true)) {
       await Future.delayed(Duration(milliseconds: 200));
     }
@@ -22,6 +22,7 @@ class PLayerNav {
             player: player,
             details: details,
             bgColor: bgColor,
+            bottomMargin: bottomMargin,
           );
         });
     Overlay.of(ctx, rootOverlay: false).insert(overlayEntry);

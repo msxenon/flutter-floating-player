@@ -11,7 +11,8 @@ class FloatingWrapper extends StatefulWidget {
   final WidgetBuilder details;
   final Color bgColor;
   final Function onRemove;
-  FloatingWrapper({this.player, this.details, this.bgColor, @required this.onRemove, Key key}) : super(key: key);
+  final double bottomMargin;
+  FloatingWrapper({this.player, this.details, this.bgColor, @required this.onRemove, this.bottomMargin: 80, Key key}) : super(key: key);
 
   @override
   _FloatingWrapperState createState() => _FloatingWrapperState();
@@ -55,7 +56,7 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
                 if (!model.isFullScreen)
                   DraggableWidget(
                     onRemove: widget.onRemove,
-                    bottomMargin: 80,
+                    bottomMargin: widget.bottomMargin,
                     intialVisibility: true,
                     horizontalSapce: 0,
                     dragAnimationScale: 0.5,
