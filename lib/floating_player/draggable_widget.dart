@@ -140,7 +140,6 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
 
   bool get currentVisibility => visible ?? widget.intialVisibility;
 
-  bool isStillTouching;
   double lastCaseYPos = 0;
   TapDownDetails _downPointer;
   @override
@@ -235,7 +234,13 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                   scale: _floatingViewController.isFullScreen.value ? 1 : percentage,
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      _floatingViewController.toggleControllers();
+                    },
                     onDoubleTap: () {
+                      if (_floatingViewController.isFullScreen.value) {
+                        return;
+                      }
                       if (currentlyDocked == AnchoringPosition.minimized) {
                         _animateTo(AnchoringPosition.maximized);
                       } else {
@@ -243,19 +248,14 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                       }
                     },
                     onTapDown: (v) async {
-                      isStillTouching = false;
                       _downPointer = v;
                       await Future<void>.delayed(widget.touchDelay);
-                      if (!_floatingViewController.showControllerView.value) {
-                        isStillTouching = true;
-                      }
                     },
                     onVerticalDragEnd: (v) {
                       _floatingViewController.dragging(false);
                       if (_floatingViewController.isFullScreen.value) {
                         return;
                       }
-                      isStillTouching = false;
 
                       final p = Offset(left, top);
                       bool switchPos = v.velocity.pixelsPerSecond.dy.abs() > 7000.0 ? true : false;
@@ -289,6 +289,9 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                       });
                     },
                     onHorizontalDragUpdate: (f) {
+                      if (!_floatingViewController.canClose.value) {
+                        return;
+                      }
                       _floatingViewController.dragging(true);
                       left = left + f.primaryDelta;
                       if (left <= hardLeft) {

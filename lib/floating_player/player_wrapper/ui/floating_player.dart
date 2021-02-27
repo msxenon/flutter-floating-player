@@ -28,6 +28,13 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
   }
 
   @override
+  void initState() {
+    floatingViewController.anchoringPosition(AnchoringPosition.maximized);
+    print('_FloatingWrapperState ${floatingViewController.toString()}');
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GetBuilder<FloatingViewController>(
         init: floatingViewController,

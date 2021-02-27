@@ -10,8 +10,8 @@ import '../../draggable_widget.dart';
 class FloatingViewController extends GetxController {
   final Duration toggleOffDuration = const Duration(seconds: 5);
   VlcPlayerController videoPlayerController;
-  RxBool _showControllerView = false.obs;
-  RxBool get showControllerView => _showControllerView;
+  var controlsIsShowing = false.obs;
+
   bool get showDetails => detailsTopPadding > 0;
   double detailsTopPadding = 0;
   Size screenSize;
@@ -19,9 +19,11 @@ class FloatingViewController extends GetxController {
   Timer controllerTimer;
   var anchoringPosition = AnchoringPosition.maximized.obs;
   var isFullScreen = false.obs;
-  RxBool isMaximized = true.obs;
+  var isMaximized = true.obs;
   var dragging = false.obs;
   var controllersCanBeVisible = true.obs;
+  var canMinimize = true.obs;
+  var canClose = true.obs;
   @override
   onInit() {
     anchoringPosition.value = AnchoringPosition.maximized;
@@ -41,30 +43,34 @@ class FloatingViewController extends GetxController {
       isMaximized(anchoringPosition.value == AnchoringPosition.maximized);
       isFullScreen(anchoringPosition.value == AnchoringPosition.fullScreen);
       controllersCanBeVisible(!dragging.value && anchoringPosition.value != AnchoringPosition.minimized);
+      canMinimize(isMaximized.value);
+      canClose(!isFullScreen.value);
     });
 
     ever(dragging, (f) {
       controllersCanBeVisible(!dragging.value && anchoringPosition.value != AnchoringPosition.minimized);
+      if (dragging.value) {
+        controlsIsShowing(false);
+      }
     });
-  }
-  set showControllerViewValue(bool value) {
-    _showControllerView.value = value && isMaximized.value;
   }
 
   void toggleControllers() {
-    showControllerViewValue = (!_showControllerView.value);
-    if (_showControllerView.value) {
+    if (!controllersCanBeVisible.value) {
+      return;
+    }
+    controlsIsShowing(!controlsIsShowing.value);
+    if (controlsIsShowing.value) {
       _startToggleOffTimer();
     } else {
       controllerTimer?.cancel();
     }
   }
 
-  VlcPlayerController createController({VlcPlayerController vlcPlayerController}) {
+  void createController({VlcPlayerController vlcPlayerController}) {
     videoPlayerController = vlcPlayerController ??
         VlcPlayerController.network('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
             hwAcc: HwAcc.FULL, autoPlay: true, options: VlcPlayerOptions(), autoInitialize: true);
-    return videoPlayerController;
   }
 
   @override
@@ -95,9 +101,11 @@ class FloatingViewController extends GetxController {
 
   void _startToggleOffTimer() {
     controllerTimer = Timer(toggleOffDuration, () {
-      if (_showControllerView.value) {
-        showControllerViewValue = false;
-      }
+      videoPlayerController?.isPlaying()?.then((isPlaying) {
+        if (controlsIsShowing.value && isPlaying) {
+          controlsIsShowing(false);
+        }
+      });
     });
   }
 
@@ -126,5 +134,10 @@ class FloatingViewController extends GetxController {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+  }
+
+  @override
+  String toString() {
+    return 'FloatingViewController{toggleOffDuration: $toggleOffDuration, videoPlayerController: $videoPlayerController, controlsIsShowing: $controlsIsShowing, detailsTopPadding: $detailsTopPadding, screenSize: $screenSize, initialHeight: $initialHeight, controllerTimer: $controllerTimer, anchoringPosition: $anchoringPosition, isFullScreen: $isFullScreen, isMaximized: $isMaximized, dragging: $dragging, controllersCanBeVisible: $controllersCanBeVisible, canMinimize: $canMinimize, canClose: $canClose}';
   }
 }
