@@ -19,18 +19,16 @@ class FloatingWrapper extends StatefulWidget {
 }
 
 class _FloatingWrapperState extends State<FloatingWrapper> {
-  FloatingViewController floatingViewController = Get.put(FloatingViewController());
+  final FloatingViewController floatingViewController = Get.put(FloatingViewController(), permanent: true);
+
   @override
   void dispose() {
-    floatingViewController.onClose();
-    print('_FloatingWrapperState disposseddd');
     super.dispose();
   }
 
   @override
   void initState() {
     floatingViewController.anchoringPosition(AnchoringPosition.maximized);
-    print('_FloatingWrapperState ${floatingViewController.toString()}');
     super.initState();
   }
 

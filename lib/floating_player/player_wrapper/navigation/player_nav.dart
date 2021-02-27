@@ -34,6 +34,8 @@ class PLayerNav {
       if (forceClear && overlayEntry != null) {
         overlayEntry.remove();
         overlayEntry = null;
+        final controller = Get.find<FloatingViewController>();
+        controller.onClose();
         return false;
       } else if (overlayEntry != null) {
         final controller = Get.find<FloatingViewController>();
