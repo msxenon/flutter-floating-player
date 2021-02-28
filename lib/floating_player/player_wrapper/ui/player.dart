@@ -7,10 +7,10 @@ import 'package:subtitle_wrapper_package/data/models/style/subtitle_style.dart';
 import 'package:subtitle_wrapper_package/subtitle_wrapper_package.dart';
 
 class Player extends StatefulWidget {
-  final bool usePlayerPlaceHolder;
-  final Widget customPlayer;
-
-  const Player({Key key, this.usePlayerPlaceHolder, this.customPlayer}) : super(key: key);
+  final Map<String, String> videoRes;
+  final String subtitle;
+  final bool useMockData;
+  const Player({Key key, this.videoRes, this.subtitle, this.useMockData: true}) : super(key: key);
 
   @override
   _PlayerState createState() => _PlayerState();
@@ -20,7 +20,9 @@ class _PlayerState extends State<Player> {
   final FloatingViewController floatingViewController = Get.find();
   @override
   void initState() {
-    floatingViewController.createController(videoRes: {'BigBunny': MockData.mp4Bunny, 'Other': MockData.shortMovie}, subtitleLink: MockData.srt);
+    floatingViewController.createController(
+        videoRes: (widget.videoRes == null || widget.useMockData) ? {'BigBunny': MockData.mp4Bunny, 'Other': MockData.shortMovie} : widget.videoRes,
+        subtitleLink: (widget.subtitle == null || widget.useMockData) ? MockData.srt : widget.subtitle);
     super.initState();
   }
 

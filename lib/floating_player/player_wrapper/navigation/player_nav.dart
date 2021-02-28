@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/floating_player.dart';
+import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:get/get.dart';
 
 import '../controllers/video_view_controller.dart';
@@ -7,7 +8,7 @@ import '../controllers/video_view_controller.dart';
 class PLayerNav {
   static OverlayEntry overlayEntry;
 
-  static void showPlayer(BuildContext ctx, WidgetBuilder player, WidgetBuilder details, {Color bgColor, double bottomMargin: 80}) async {
+  static void showPlayer(BuildContext ctx, WidgetBuilder player, WidgetBuilder details, {Color bgColor, double bottomMargin: 80, OverlayControllerData customControllers}) async {
     if (!clearViews('showPlayer', forceClear: true)) {
       await Future.delayed(Duration(milliseconds: 200));
     }
@@ -16,6 +17,7 @@ class PLayerNav {
         opaque: false,
         builder: (context) {
           return FloatingWrapper(
+            customControllers: customControllers,
             onRemove: () {
               clearViews('onRemove', forceClear: true);
             },

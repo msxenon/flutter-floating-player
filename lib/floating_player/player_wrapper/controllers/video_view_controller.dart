@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
 import 'package:subtitle_wrapper_package/subtitle_controller.dart';
@@ -128,6 +129,8 @@ class FloatingViewController extends GetxController {
   Color floatingBottomSheetBgColor = Colors.white;
   Color floatingBottomSheetTextColor = Colors.black87;
   Color floatingBottomSheetDivColor = Colors.black.withOpacity(0.3);
+  OverlayControllerData customController;
+  WidgetBuilder customControllers;
 
   @override
   onInit() {
