@@ -8,7 +8,7 @@ class PLayerNav {
   static OverlayEntry overlayEntry;
 
   static void showPlayer(BuildContext ctx, WidgetBuilder player, WidgetBuilder details, {Color bgColor, double bottomMargin: 80}) async {
-    if (!clearViews(forceClear: true)) {
+    if (!clearViews('showPlayer', forceClear: true)) {
       await Future.delayed(Duration(milliseconds: 200));
     }
     overlayEntry = OverlayEntry(
@@ -17,7 +17,7 @@ class PLayerNav {
         builder: (context) {
           return FloatingWrapper(
             onRemove: () {
-              clearViews(forceClear: true);
+              clearViews('onRemove', forceClear: true);
             },
             player: player,
             details: details,
@@ -28,9 +28,9 @@ class PLayerNav {
     Overlay.of(ctx, rootOverlay: false).insert(overlayEntry);
   }
 
-  static bool clearViews({bool forceClear: false}) {
+  static bool clearViews(String tag, {bool forceClear: false}) {
     try {
-      print('clearView called $forceClear ${overlayEntry != null} ');
+      print('clearView called $forceClear ${overlayEntry != null} $tag');
       if (forceClear && overlayEntry != null) {
         overlayEntry.remove();
         overlayEntry = null;
@@ -42,7 +42,7 @@ class PLayerNav {
         if (controller.isFullScreen.value) {
           controller.toggleFullScreen();
           return false;
-        } else if (controller.isMaximized.value) {
+        } else if (controller.isMaximized.value && !controller.overlayJustRemoved()) {
           controller.minimize();
           return false;
         }
@@ -54,7 +54,7 @@ class PLayerNav {
   }
 
   static bool canPopup() {
-    return clearViews();
+    return clearViews('canPopup');
   }
 }
 
@@ -67,7 +67,7 @@ class PlayerAwareScaffold extends StatelessWidget {
     return WillPopScope(
         child: child,
         onWillPop: () async {
-          return PLayerNav.clearViews();
+          return PLayerNav.clearViews('WillPopScope');
         });
   }
 }

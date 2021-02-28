@@ -7,17 +7,55 @@ void main() {
   runApp(MyApp());
 }
 
+GlobalKey<NavigatorState> playerOverFlowKey = GlobalKey();
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Stack(
+        alignment: Alignment.bottomLeft,
+        children: [
+          GetMaterialApp(
+            title: 'Flutter Demo',
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
+              visualDensity: VisualDensity.adaptivePlatformDensity,
+            ),
+            home: Stack(children: [MyHomePage()]),
+            popGesture: true,
+          ),
+          // Directionality(
+          //   textDirection: TextDirection.rtl,
+          //   child: SizedBox(
+          //     width: 200,
+          //     height: 200,
+          //     child: Navigator(
+          //       key: playerOverFlowKey,
+          //       onGenerateRoute: (RouteSettings settings) {
+          //         if (settings.name == '/') {
+          //           return MaterialPageRoute(builder: (context) {
+          //             return Container(
+          //               width: 200,
+          //               color: Colors.red,
+          //               child: Text('Player ${settings.name} start'),
+          //             );
+          //           });
+          //         }
+          //         return MaterialPageRoute(builder: (context) {
+          //           return Container(
+          //             width: 200,
+          //             color: Colors.red,
+          //             child: Text('Player ${settings.name} }'),
+          //           );
+          //         });
+          //       },
+          //     ),
+          //   ),
+          // )
+        ],
       ),
-      home: MyHomePage(),
-      popGesture: true,
     );
   }
 }
@@ -34,26 +72,30 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget player;
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            RaisedButton(
-              onPressed: () {
-                Get.to(SecondPage(
-                  title: 'Dynamic Page',
-                ));
-              },
-              child: Text('Open Dynamic Pages'),
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            title: Text(widget.title),
+          ),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                RaisedButton(
+                  onPressed: () {
+                    Get.to(SecondPage(
+                      title: 'Dynamic Page',
+                    ));
+                  },
+                  child: Text('Open Dynamic Pages'),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ).attachPLayerAware();
+          ),
+        ).attachPLayerAware(),
+      ],
+    );
   }
 }
 
