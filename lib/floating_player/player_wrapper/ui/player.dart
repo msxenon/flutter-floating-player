@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
-import 'package:flutter_player/floating_player/player_wrapper/mock_data.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:get/get.dart';
 import 'package:subtitle_wrapper_package/data/models/style/subtitle_style.dart';
 import 'package:subtitle_wrapper_package/subtitle_wrapper_package.dart';
 
 class Player extends StatefulWidget {
-  final Map<String, String> videoRes;
-  final String subtitle;
-  final bool useMockData;
-  const Player({Key key, this.videoRes, this.subtitle, this.useMockData: true}) : super(key: key);
+  final PlayerData playerData;
+  const Player({Key key, this.playerData = const PlayerData()})
+      : super(key: key);
 
   @override
   _PlayerState createState() => _PlayerState();
@@ -20,9 +19,7 @@ class _PlayerState extends State<Player> {
   final FloatingViewController floatingViewController = Get.find();
   @override
   void initState() {
-    floatingViewController.createController(
-        videoRes: (widget.videoRes == null || widget.useMockData) ? {'BigBunny': MockData.mp4Bunny, 'Other': MockData.shortMovie} : widget.videoRes,
-        subtitleLink: (widget.subtitle == null || widget.useMockData) ? MockData.srt : widget.subtitle);
+    floatingViewController.createController(widget.playerData);
     super.initState();
   }
 
@@ -32,7 +29,9 @@ class _PlayerState extends State<Player> {
         init: floatingViewController.playerSettingsController,
         builder: (model) {
           return SubTitleWrapper(
-            key: Key(floatingViewController.playerSettingsController.getVideo() + 'sub'),
+            key: Key(
+                floatingViewController.playerSettingsController.getVideo() +
+                    'sub'),
             videoPlayerController: floatingViewController.videoPlayerController,
             subtitleController: model.subtitleController,
             subtitleStyle: SubtitleStyle(
@@ -41,7 +40,8 @@ class _PlayerState extends State<Player> {
               hasBorder: true,
             ),
             videoChild: VlcPlayerWithControls(
-              key: Key(floatingViewController.playerSettingsController.getVideo()),
+              key: Key(
+                  floatingViewController.playerSettingsController.getVideo()),
               controller: floatingViewController.videoPlayerController,
             ),
           );

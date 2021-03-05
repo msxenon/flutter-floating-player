@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
 import 'package:subtitle_wrapper_package/subtitle_controller.dart';
 
 import '../../draggable_widget.dart';
+import '../mock_data.dart';
 
 enum TextSizes { normal, medium, large, xlarge }
 
@@ -84,11 +86,16 @@ class PlayerSettingsController extends GetxController {
 
   void _setSubtitle() {
     var subtitleLink = link;
-    var subtitleType = SubtitleType.values.firstWhere((e) => subtitleLink.split('.')?.last == e.getName(), orElse: () => SubtitleType.webvtt);
+    var subtitleType = SubtitleType.values.firstWhere(
+        (e) => subtitleLink.split('.')?.last == e.getName(),
+        orElse: () => SubtitleType.webvtt);
     if (subtitleController == null) {
       isEnabled = link?.isNotEmpty == true;
     }
-    subtitleController = SubtitleController(subtitleUrl: subtitleLink, subtitleType: subtitleType, showSubtitles: isEnabled);
+    subtitleController = SubtitleController(
+        subtitleUrl: subtitleLink,
+        subtitleType: subtitleType,
+        showSubtitles: isEnabled);
   }
 
   void toggleSubtitle(bool forceIsEnabled) {
@@ -112,7 +119,8 @@ class FloatingViewController extends GetxController {
   final Duration toggleOffDuration = const Duration(seconds: 5);
   VlcPlayerController videoPlayerController;
   var controlsIsShowing = false.obs;
-  PlayerSettingsController playerSettingsController = Get.put(PlayerSettingsController());
+  PlayerSettingsController playerSettingsController =
+      Get.put(PlayerSettingsController());
   bool get showDetails => detailsTopPadding > 0;
   double detailsTopPadding = 0;
   Size screenSize;
@@ -131,7 +139,7 @@ class FloatingViewController extends GetxController {
   Color floatingBottomSheetDivColor = Colors.black.withOpacity(0.3);
   OverlayControllerData customController;
   WidgetBuilder customControllers;
-
+  PlayerData _playerData;
   @override
   onInit() {
     anchoringPosition.value = AnchoringPosition.maximized;
@@ -150,14 +158,16 @@ class FloatingViewController extends GetxController {
     ever(anchoringPosition, (f) {
       isMaximized(anchoringPosition.value == AnchoringPosition.maximized);
       isFullScreen(anchoringPosition.value == AnchoringPosition.fullScreen);
-      controllersCanBeVisible(!dragging.value && anchoringPosition.value != AnchoringPosition.minimized);
+      controllersCanBeVisible(!dragging.value &&
+          anchoringPosition.value != AnchoringPosition.minimized);
       canMinimize(isMaximized.value);
       canClose(!isFullScreen.value);
       removeOverlay();
     });
 
     ever(dragging, (f) {
-      controllersCanBeVisible(!dragging.value && anchoringPosition.value != AnchoringPosition.minimized);
+      controllersCanBeVisible(!dragging.value &&
+          anchoringPosition.value != AnchoringPosition.minimized);
       if (dragging.value) {
         controlsIsShowing(false);
       }
@@ -177,17 +187,31 @@ class FloatingViewController extends GetxController {
     }
   }
 
-  void createController({VlcPlayerController vlcPlayerController, Map<String, String> videoRes, String subtitleLink}) {
-    print('create controllercalled');
+  void createController(PlayerData playerData) {
+    _playerData = playerData;
+    var videoRes = (playerData.videoRes == null || playerData.useMockData)
+        ? {'BigBunny': MockData.mp4Bunny, 'Other': MockData.shortMovie}
+        : playerData.videoRes;
+    var subtitleLink = (playerData.subtitle == null || playerData.useMockData)
+        ? MockData.srt
+        : playerData.subtitle;
     playerSettingsController.initVideoResolutions(videoRes);
     setNewVideo();
     playerSettingsController.initSubtitles(subtitleLink: subtitleLink);
   }
 
   void setNewVideo() {
-    print('create controllercalled');
-
-    videoPlayerController = VlcPlayerController.network(playerSettingsController.getVideo(), hwAcc: HwAcc.FULL, autoPlay: true, options: VlcPlayerOptions(), autoInitialize: true);
+    videoPlayerController = VlcPlayerController.network(
+        playerSettingsController.getVideo(),
+        hwAcc: HwAcc.FULL,
+        autoPlay: true,
+        options: VlcPlayerOptions(), onInit: () async {
+      if (_playerData?.playerPosition != null) {
+        await Future.delayed(Duration(milliseconds: 1000));
+        videoPlayerController.seekTo(_playerData.playerPosition);
+      }
+      debugPrint('player onInit ${_playerData?.playerPosition} wait ');
+    }, autoInitialize: true);
   }
 
   @override
@@ -244,7 +268,8 @@ class FloatingViewController extends GetxController {
   }
 
   void normalScreenOptions() {
-    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
+    SystemChrome.setEnabledSystemUIOverlays(
+        [SystemUiOverlay.top, SystemUiOverlay.bottom]);
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -274,6 +299,10 @@ class FloatingViewController extends GetxController {
   }
 
   bool overlayJustRemoved() {
-    return _overlayEntry != null || (overlayRemoveTimeStamp?.add(Duration(seconds: 1))?.isAfter(DateTime.now()) ?? false);
+    return _overlayEntry != null ||
+        (overlayRemoveTimeStamp
+                ?.add(Duration(seconds: 1))
+                ?.isAfter(DateTime.now()) ??
+            false);
   }
 }
