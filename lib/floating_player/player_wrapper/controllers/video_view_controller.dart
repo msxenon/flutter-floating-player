@@ -17,12 +17,13 @@ class PlayerSettingsController extends GetxController {
   SubtitleController subtitleController;
   DateTime dateTime;
   String link;
-  bool isEnabled;
+  bool isEnabled = false;
   Map<String, String> videoResolutions = {};
   String selectedRes;
   TextSizes textEnum = TextSizes.medium;
   static const double _defaultTextSize = 20;
   double textSize = _defaultTextSize;
+  Function(Duration, dynamic videoItem, String itemId) onDisposeListener;
   double _getTextSize() {
     double result = _defaultTextSize;
     switch (textEnum) {
@@ -140,6 +141,7 @@ class FloatingViewController extends GetxController {
   OverlayControllerData customController;
   WidgetBuilder customControllers;
   PlayerData _playerData;
+
   @override
   onInit() {
     anchoringPosition.value = AnchoringPosition.maximized;
@@ -206,11 +208,10 @@ class FloatingViewController extends GetxController {
         hwAcc: HwAcc.FULL,
         autoPlay: true,
         options: VlcPlayerOptions(), onInit: () async {
-      if (_playerData?.playerPosition != null) {
+      if (_playerData?.startPosition != null) {
         await Future.delayed(Duration(milliseconds: 1000));
-        videoPlayerController.seekTo(_playerData.playerPosition);
+        videoPlayerController.seekTo(_playerData.startPosition);
       }
-      debugPrint('player onInit ${_playerData?.playerPosition} wait ');
     }, autoInitialize: true);
   }
 
@@ -304,5 +305,24 @@ class FloatingViewController extends GetxController {
                 ?.add(Duration(seconds: 1))
                 ?.isAfter(DateTime.now()) ??
             false);
+  }
+
+  void playerDispose() async {
+    savePosition();
+    if (_playerData?.onDispose != null) {
+      _playerData?.onDispose();
+    }
+  }
+
+  void savePosition() {
+    try {
+      final currentPos = videoPlayerController.value.position;
+      _playerData?.savePosition(SavePosition(
+          seconds: currentPos.inSeconds,
+          videoItem: _playerData.videoItem,
+          itemId: _playerData.itemId));
+    } catch (e) {
+      print(e);
+    }
   }
 }

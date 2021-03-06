@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/ui/player.dart';
 import 'package:get/get.dart';
 
 import 'floating_player/player_wrapper/navigation/player_nav.dart';
@@ -120,7 +122,17 @@ class _SecState extends State<SecondPage> {
           children: <Widget>[
             RaisedButton(
               onPressed: () {
-                PLayerNav.showPlayer(context, null, null);
+                PLayerNav.showPlayer(
+                    context,
+                    (ctx) => Player(
+                        playerData: PlayerData<String>(
+                            startPosition: Duration(seconds: 20 ?? 0),
+                            itemId: 11,
+                            videoItem: 'movieX',
+                            savePosition: (x) {
+                              print('savePos callback $x');
+                            })),
+                    null);
               },
               child: Text('Open Floating Player Screen'),
             ),

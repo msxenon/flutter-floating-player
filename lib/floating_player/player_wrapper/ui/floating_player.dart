@@ -15,17 +15,27 @@ class FloatingWrapper extends StatefulWidget {
   final Function onRemove;
   final double bottomMargin;
   final OverlayControllerData customControllers;
-  FloatingWrapper({this.player, this.details, this.bgColor, @required this.onRemove, this.bottomMargin: 80, this.customControllers, Key key}) : super(key: key);
+  FloatingWrapper(
+      {this.player,
+      this.details,
+      this.bgColor,
+      @required this.onRemove,
+      this.bottomMargin: 80,
+      this.customControllers,
+      Key key})
+      : super(key: key);
 
   @override
   _FloatingWrapperState createState() => _FloatingWrapperState();
 }
 
 class _FloatingWrapperState extends State<FloatingWrapper> {
-  final FloatingViewController floatingViewController = Get.put(FloatingViewController(), permanent: true);
+  final FloatingViewController floatingViewController =
+      Get.put(FloatingViewController(), permanent: true);
 
   @override
   void dispose() {
+    floatingViewController.playerDispose();
     super.dispose();
   }
 
@@ -55,7 +65,10 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
                     ignoring: !model.isMaximized.value,
                     child: AnimatedOpacity(
                       duration: Duration(milliseconds: 250),
-                      opacity: (model.isMaximized.value && !model.dragging.value) ? 1 : 0,
+                      opacity:
+                          (model.isMaximized.value && !model.dragging.value)
+                              ? 1
+                              : 0,
                       child: PLayerDetails(
                         child: widget.details,
                         bgColor: widget.bgColor,
@@ -72,7 +85,8 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
                   shadowBorderRadius: 0,
                   initialHeight: model.initialHeight,
                   touchDelay: Duration(milliseconds: 100),
-                  child: widget.player != null ? widget.player(context) : Player(),
+                  child:
+                      widget.player != null ? widget.player(context) : Player(),
                   initialPosition: AnchoringPosition.maximized,
                 ),
               ],
