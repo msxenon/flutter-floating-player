@@ -5,12 +5,19 @@ import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
 
 class ControlsOverlay extends StatelessWidget {
-  ControlsOverlay({Key key, this.controller, this.position, this.duration, this.sliderValue, this.sliderUpdate}) : super(key: key);
-  final String position;
-  final String duration;
-  final double sliderValue;
-  final Function(double) sliderUpdate;
-  final VlcPlayerController controller;
+  ControlsOverlay(
+      {Key? key,
+      this.controller,
+      this.position,
+      this.duration,
+      this.sliderValue,
+      this.sliderUpdate})
+      : super(key: key);
+  final String? position;
+  final String? duration;
+  final double? sliderValue;
+  final Function(double)? sliderUpdate;
+  final VlcPlayerController? controller;
 
   final FloatingViewController _floatingViewController = Get.find();
 
@@ -23,17 +30,17 @@ class ControlsOverlay extends StatelessWidget {
           duration: Duration(milliseconds: 50),
           reverseDuration: Duration(milliseconds: 200),
           child: Obx(() {
-            if (!_floatingViewController.isMaximized.value) {
+            if (!_floatingViewController.isMaximized.value!) {
               return SizedBox.shrink();
             }
             return Builder(
               builder: (ctx) {
-                if (controller.value.isEnded) {
+                if (controller!.value.isEnded) {
                   return Center(
                     child: IconButton(
                       onPressed: () async {
-                        await controller.stop();
-                        await controller.play();
+                        await controller!.stop();
+                        await controller!.play();
                       },
                       color: Colors.white,
                       iconSize: 100.0,
@@ -41,7 +48,7 @@ class ControlsOverlay extends StatelessWidget {
                     ),
                   );
                 } else {
-                  switch (controller.value.playingState) {
+                  switch (controller!.value.playingState) {
                     case PlayingState.initializing:
                       return CircularProgressIndicator();
 
@@ -57,8 +64,10 @@ class ControlsOverlay extends StatelessWidget {
                             children: [
                               IconButton(
                                 onPressed: () async {
-                                  if (controller.value.duration != null) {
-                                    await controller.seekTo(controller.value.position - Duration(seconds: 10));
+                                  if (controller!.value.duration != null) {
+                                    await controller!.seekTo(
+                                        controller!.value.position -
+                                            Duration(seconds: 10));
                                   }
                                 },
                                 color: Colors.white,
@@ -67,7 +76,7 @@ class ControlsOverlay extends StatelessWidget {
                               ),
                               IconButton(
                                 onPressed: () async {
-                                  await controller.play();
+                                  await controller!.play();
                                 },
                                 color: Colors.white,
                                 iconSize: 100.0,
@@ -75,8 +84,10 @@ class ControlsOverlay extends StatelessWidget {
                               ),
                               IconButton(
                                 onPressed: () async {
-                                  if (controller.value.duration != null) {
-                                    await controller.seekTo(controller.value.position + Duration(seconds: 10));
+                                  if (controller!.value.duration != null) {
+                                    await controller!.seekTo(
+                                        controller!.value.position +
+                                            Duration(seconds: 10));
                                   }
                                 },
                                 color: Colors.white,
@@ -97,7 +108,7 @@ class ControlsOverlay extends StatelessWidget {
                       return Center(
                         child: IconButton(
                           onPressed: () async {
-                            await controller.play();
+                            await controller!.play();
                           },
                           color: Colors.white,
                           iconSize: 100.0,
@@ -112,7 +123,8 @@ class ControlsOverlay extends StatelessWidget {
           }),
         ),
         Visibility(
-          visible: _floatingViewController.controllersCanBeVisible.value && _floatingViewController.controlsIsShowing.value,
+          visible: _floatingViewController.controllersCanBeVisible.value! &&
+              _floatingViewController.controlsIsShowing.value!,
           child: Align(
             alignment: Alignment.topLeft,
             child: Container(
@@ -127,7 +139,8 @@ class ControlsOverlay extends StatelessWidget {
                       IconButton(
                         icon: Icon(Icons.more_vert),
                         color: Colors.white,
-                        onPressed: () => showFloatingBottomSheet(context, _floatingViewController, null),
+                        onPressed: () => showFloatingBottomSheet(
+                            context, _floatingViewController, null),
                       ),
                       IconButton(
                         icon: Icon(Icons.cast),
@@ -147,14 +160,22 @@ class ControlsOverlay extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Size: ' + (controller.value.size?.width?.toInt() ?? 0).toString() + 'x' + (controller.value.size?.height?.toInt() ?? 0).toString(),
+                          'Size: ' +
+                              (controller!.value.size?.width.toInt() ?? 0)
+                                  .toString() +
+                              'x' +
+                              (controller!.value.size?.height.toInt())
+                                  .toString(),
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(color: Colors.white, fontSize: 10),
                         ),
                         SizedBox(height: 5),
                         Text(
-                          'Status: ' + controller.value.playingState.toString().split('.')[1],
+                          'Status: ' +
+                              controller!.value.playingState
+                                  .toString()
+                                  .split('.')[1],
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(color: Colors.white, fontSize: 10),
@@ -170,7 +191,7 @@ class ControlsOverlay extends StatelessWidget {
         Align(
           alignment: Alignment.bottomCenter,
           child: Visibility(
-            visible: _floatingViewController.controllersCanBeVisible.value,
+            visible: _floatingViewController.controllersCanBeVisible.value!,
             child: Container(
               height: 50,
               color: Colors.black87,
@@ -179,9 +200,13 @@ class ControlsOverlay extends StatelessWidget {
                 children: [
                   IconButton(
                     color: Colors.white,
-                    icon: controller.value.isPlaying ? Icon(Icons.pause_circle_outline) : Icon(Icons.play_circle_outline),
+                    icon: controller!.value.isPlaying
+                        ? Icon(Icons.pause_circle_outline)
+                        : Icon(Icons.play_circle_outline),
                     onPressed: () async {
-                      return controller.value.isPlaying ? await controller.pause() : await controller.play();
+                      return controller!.value.isPlaying
+                          ? await controller!.pause()
+                          : await controller!.play();
                     },
                   ),
                   Expanded(
@@ -190,25 +215,28 @@ class ControlsOverlay extends StatelessWidget {
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Text(
-                          position,
+                          position!,
                           style: TextStyle(color: Colors.white),
                         ),
                         Expanded(
                           child: Slider(
                             activeColor: Colors.redAccent,
                             inactiveColor: Colors.white70,
-                            value: sliderValue,
+                            value: sliderValue!,
                             min: 0.0,
-                            max: controller.value.duration == null ? 1.0 : controller.value.duration.inSeconds.toDouble(),
+                            max: controller!.value.duration == null
+                                ? 1.0
+                                : controller!.value.duration.inSeconds
+                                    .toDouble(),
                             onChanged: (progress) {
-                              sliderUpdate(progress);
+                              sliderUpdate!(progress);
                               //convert to Milliseconds since VLC requires MS to set time
-                              controller.setTime(sliderValue.toInt() * 1000);
+                              controller!.setTime(sliderValue!.toInt() * 1000);
                             },
                           ),
                         ),
                         Text(
-                          duration,
+                          duration!,
                           style: TextStyle(color: Colors.white),
                         ),
                       ],

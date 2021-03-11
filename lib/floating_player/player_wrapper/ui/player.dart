@@ -8,7 +8,7 @@ import 'package:subtitle_wrapper_package/subtitle_wrapper_package.dart';
 
 class Player extends StatefulWidget {
   final PlayerData playerData;
-  const Player({Key key, this.playerData = const PlayerData()})
+  const Player({Key? key, this.playerData = const PlayerData()})
       : super(key: key);
 
   @override
@@ -17,10 +17,19 @@ class Player extends StatefulWidget {
 
 class _PlayerState extends State<Player> {
   final FloatingViewController floatingViewController = Get.find();
+  bool showPLayer = false;
   @override
   void initState() {
-    floatingViewController.createController(widget.playerData);
+    _setControllers();
     super.initState();
+  }
+
+  void _setControllers() async {
+    await floatingViewController.createController(widget.playerData);
+    showPLayer = true;
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -28,12 +37,16 @@ class _PlayerState extends State<Player> {
     return GetBuilder<PlayerSettingsController>(
         init: floatingViewController.playerSettingsController,
         builder: (model) {
+          if (!showPLayer ||
+              floatingViewController.subtitleController == null) {
+            return Center(child: CircularProgressIndicator());
+          }
           return SubTitleWrapper(
             key: Key(
-                floatingViewController.playerSettingsController.getVideo() +
+                floatingViewController.playerSettingsController!.getVideo()! +
                     'sub'),
-            videoPlayerController: floatingViewController.videoPlayerController,
-            subtitleController: model.subtitleController,
+            videoPlayerController: floatingViewController.subtitleController!,
+            subtitleController: model.subtitleController!,
             subtitleStyle: SubtitleStyle(
               textColor: Colors.white,
               fontSize: model.isEnabled ? model.textSize : 0,
@@ -41,8 +54,8 @@ class _PlayerState extends State<Player> {
             ),
             videoChild: VlcPlayerWithControls(
               key: Key(
-                  floatingViewController.playerSettingsController.getVideo()),
-              controller: floatingViewController.videoPlayerController,
+                  floatingViewController.playerSettingsController!.getVideo()!),
+              controller: floatingViewController.videoPlayerController!,
             ),
           );
         });

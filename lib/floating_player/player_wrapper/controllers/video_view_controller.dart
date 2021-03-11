@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
 import 'package:subtitle_wrapper_package/subtitle_controller.dart';
+import 'package:video_player/video_player.dart';
+import 'package:wakelock/wakelock.dart';
 
 import '../../draggable_widget.dart';
 import '../mock_data.dart';
@@ -14,16 +17,16 @@ import '../mock_data.dart';
 enum TextSizes { normal, medium, large, xlarge }
 
 class PlayerSettingsController extends GetxController {
-  SubtitleController subtitleController;
-  DateTime dateTime;
-  String link;
+  SubtitleController? subtitleController;
+  DateTime? dateTime;
+  String? link;
   bool isEnabled = false;
-  Map<String, String> videoResolutions = {};
-  String selectedRes;
+  Map<String, String>? videoResolutions = {};
+  String? selectedRes;
   TextSizes textEnum = TextSizes.medium;
   static const double _defaultTextSize = 20;
   double textSize = _defaultTextSize;
-  Function(Duration, dynamic videoItem, String itemId) onDisposeListener;
+  Function(Duration, dynamic videoItem, String itemId)? onDisposeListener;
   double _getTextSize() {
     double result = _defaultTextSize;
     switch (textEnum) {
@@ -49,11 +52,12 @@ class PlayerSettingsController extends GetxController {
     update();
   }
 
-  void initVideoResolutions(Map<String, String> res) {
+  Future<void> initVideoResolutions(Map<String, String>? res) async {
     videoResolutions = res;
-    if (selectedRes == null || !videoResolutions.containsKey(selectedRes)) {
-      selectedRes = videoResolutions.keys.first;
+    if (selectedRes == null || !videoResolutions!.containsKey(selectedRes)) {
+      selectedRes = videoResolutions!.keys.first;
     }
+    return;
   }
 
   void changeVideoRes(String name) {
@@ -66,13 +70,14 @@ class PlayerSettingsController extends GetxController {
     update();
   }
 
-  String getVideo() {
-    return videoResolutions[selectedRes];
+  String? getVideo() {
+    return videoResolutions![selectedRes!];
   }
 
-  void initSubtitles({String subtitleLink}) {
+  Future<void> initSubtitles({String? subtitleLink}) async {
     this.link = subtitleLink;
-    _setSubtitle();
+    await _setSubtitle();
+    return;
   }
 
   String getCaptionStringValue() {
@@ -85,10 +90,10 @@ class PlayerSettingsController extends GetxController {
     }
   }
 
-  void _setSubtitle() {
+  Future<void> _setSubtitle() async {
     var subtitleLink = link;
     var subtitleType = SubtitleType.values.firstWhere(
-        (e) => subtitleLink.split('.')?.last == e.getName(),
+        (e) => subtitleLink!.split('.').last == e.getName(),
         orElse: () => SubtitleType.webvtt);
     if (subtitleController == null) {
       isEnabled = link?.isNotEmpty == true;
@@ -96,7 +101,12 @@ class PlayerSettingsController extends GetxController {
     subtitleController = SubtitleController(
         subtitleUrl: subtitleLink,
         subtitleType: subtitleType,
+        subtitleDecoder: SubtitleDecoder.utf8,
         showSubtitles: isEnabled);
+    print(
+        'testSubs ${subtitleLink} ${subtitleType} $isEnabled ${subtitleController != null}');
+    await Future.delayed(Duration(milliseconds: 3000));
+    return;
   }
 
   void toggleSubtitle(bool forceIsEnabled) {
@@ -118,15 +128,16 @@ extension SubtitleTypeX on SubtitleType {
 
 class FloatingViewController extends GetxController {
   final Duration toggleOffDuration = const Duration(seconds: 5);
-  VlcPlayerController videoPlayerController;
+  late VlcPlayerController? videoPlayerController;
+  late VideoPlayerController? subtitleController;
   var controlsIsShowing = false.obs;
-  PlayerSettingsController playerSettingsController =
+  PlayerSettingsController? playerSettingsController =
       Get.put(PlayerSettingsController());
   bool get showDetails => detailsTopPadding > 0;
   double detailsTopPadding = 0;
-  Size screenSize;
-  double initialHeight;
-  Timer controllerTimer;
+  Size? screenSize;
+  double? initialHeight;
+  Timer? controllerTimer;
   var anchoringPosition = AnchoringPosition.maximized.obs;
   var isFullScreen = false.obs;
   var isMaximized = true.obs;
@@ -134,13 +145,13 @@ class FloatingViewController extends GetxController {
   var controllersCanBeVisible = true.obs;
   var canMinimize = true.obs;
   var canClose = true.obs;
-  OverlayEntry _overlayEntry;
+  OverlayEntry? _overlayEntry;
   Color floatingBottomSheetBgColor = Colors.white;
   Color floatingBottomSheetTextColor = Colors.black87;
   Color floatingBottomSheetDivColor = Colors.black.withOpacity(0.3);
-  OverlayControllerData customController;
-  WidgetBuilder customControllers;
-  PlayerData _playerData;
+  OverlayControllerData? customController;
+  WidgetBuilder? customControllers;
+  PlayerData? _playerData;
 
   @override
   onInit() {
@@ -153,24 +164,24 @@ class FloatingViewController extends GetxController {
     if (screenSize?.width == null) {
       screenSize = Size(Get.width, Get.height);
     }
-    initialHeight = screenSize.width / (16 / 9);
+    initialHeight = screenSize!.width / (16 / 9);
     anchoringPosition.listen((x) {
       print('anchoringPosition changed $x');
     });
-    ever(anchoringPosition, (f) {
+    ever(anchoringPosition, (dynamic f) {
       isMaximized(anchoringPosition.value == AnchoringPosition.maximized);
       isFullScreen(anchoringPosition.value == AnchoringPosition.fullScreen);
-      controllersCanBeVisible(!dragging.value &&
+      controllersCanBeVisible(!dragging.value! &&
           anchoringPosition.value != AnchoringPosition.minimized);
       canMinimize(isMaximized.value);
-      canClose(!isFullScreen.value);
+      canClose(!isFullScreen.value!);
       removeOverlay();
     });
 
-    ever(dragging, (f) {
-      controllersCanBeVisible(!dragging.value &&
+    ever(dragging, (dynamic f) {
+      controllersCanBeVisible(!dragging.value! &&
           anchoringPosition.value != AnchoringPosition.minimized);
-      if (dragging.value) {
+      if (dragging.value!) {
         controlsIsShowing(false);
       }
       removeOverlay();
@@ -178,18 +189,18 @@ class FloatingViewController extends GetxController {
   }
 
   void toggleControllers() {
-    if (!controllersCanBeVisible.value) {
+    if (!controllersCanBeVisible.value!) {
       return;
     }
-    controlsIsShowing(!controlsIsShowing.value);
-    if (controlsIsShowing.value) {
+    controlsIsShowing(!controlsIsShowing.value!);
+    if (controlsIsShowing.value!) {
       _startToggleOffTimer();
     } else {
       controllerTimer?.cancel();
     }
   }
 
-  void createController(PlayerData playerData) {
+  Future<void> createController(PlayerData playerData) async {
     _playerData = playerData;
     var videoRes = (playerData.videoRes == null || playerData.useMockData)
         ? {'BigBunny': MockData.mp4Bunny, 'Other': MockData.shortMovie}
@@ -197,22 +208,41 @@ class FloatingViewController extends GetxController {
     var subtitleLink = (playerData.subtitle == null || playerData.useMockData)
         ? MockData.srt
         : playerData.subtitle;
-    playerSettingsController.initVideoResolutions(videoRes);
-    setNewVideo();
-    playerSettingsController.initSubtitles(subtitleLink: subtitleLink);
+    playerSettingsController!.initVideoResolutions(videoRes);
+    await setNewVideo();
+    await playerSettingsController!.initSubtitles(subtitleLink: subtitleLink);
+    return;
   }
 
-  void setNewVideo() {
+  Future<void> setNewVideo() async {
     videoPlayerController = VlcPlayerController.network(
-        playerSettingsController.getVideo(),
+        playerSettingsController!.getVideo()!,
         hwAcc: HwAcc.FULL,
         autoPlay: true,
         options: VlcPlayerOptions(), onInit: () async {
       if (_playerData?.startPosition != null) {
         await Future.delayed(Duration(milliseconds: 1000));
-        videoPlayerController.seekTo(_playerData.startPosition);
+        videoPlayerController?.seekTo(_playerData!.startPosition!);
       }
     }, autoInitialize: true);
+    subtitleController =
+        VideoPlayerController.network(videoPlayerController!.dataSource);
+    subtitleController!.value = VideoPlayerValue(
+      duration: videoPlayerController!.value.duration,
+      position: videoPlayerController!.value.position,
+    );
+    videoPlayerController!.addListener(() async {
+      subtitleController?.value = subtitleController!.value.copyWith(
+        position: videoPlayerController!.value.position,
+      );
+      await refreshWakelock();
+    });
+    subtitleController?.addListener(() {
+      print(
+          'subs addListener ${subtitleController!.value.position.toString()}');
+    });
+
+    return;
   }
 
   @override
@@ -250,7 +280,7 @@ class FloatingViewController extends GetxController {
   }
 
   void toggleFullScreen() {
-    if (!isFullScreen.value) {
+    if (!isFullScreen.value!) {
       anchoringPosition(AnchoringPosition.fullScreen);
 
       ///is going full screen
@@ -280,11 +310,11 @@ class FloatingViewController extends GetxController {
   showOverlay(BuildContext context, WidgetBuilder w) {
     _overlayEntry?.remove();
     _overlayEntry = OverlayEntry(builder: (context) => w(context));
-    Overlay.of(context).insert(_overlayEntry);
+    Overlay.of(context)!.insert(_overlayEntry!);
     print('overlay is showing');
   }
 
-  DateTime overlayRemoveTimeStamp;
+  DateTime? overlayRemoveTimeStamp;
   removeOverlay() {
     if (_overlayEntry != null) {
       overlayRemoveTimeStamp = DateTime.now();
@@ -303,26 +333,39 @@ class FloatingViewController extends GetxController {
     return _overlayEntry != null ||
         (overlayRemoveTimeStamp
                 ?.add(Duration(seconds: 1))
-                ?.isAfter(DateTime.now()) ??
+                .isAfter(DateTime.now()) ??
             false);
   }
 
   void playerDispose() async {
     savePosition();
     if (_playerData?.onDispose != null) {
-      _playerData?.onDispose();
+      _playerData?.onDispose!();
     }
   }
 
   void savePosition() {
     try {
-      final currentPos = videoPlayerController.value.position;
-      _playerData?.savePosition(SavePosition(
+      final currentPos = videoPlayerController!.value.position;
+      _playerData?.savePosition!(SavePosition(
           seconds: currentPos.inSeconds,
-          videoItem: _playerData.videoItem,
-          itemId: _playerData.itemId));
+          videoItem: _playerData!.videoItem,
+          itemId: _playerData!.itemId));
     } catch (e) {
       print(e);
     }
+  }
+
+  Future<void> refreshWakelock() async {
+    if (videoPlayerController!.value.isPlaying) {
+      if (!await Wakelock.enabled) {
+        await Wakelock.enable();
+      }
+    } else {
+      if (await Wakelock.enabled) {
+        await Wakelock.disable();
+      }
+    }
+    return;
   }
 }

@@ -9,20 +9,20 @@ import 'controls_overlay.dart';
 import 'details/player_details.dart';
 
 class FloatingWrapper extends StatefulWidget {
-  final WidgetBuilder player;
-  final WidgetBuilder details;
-  final Color bgColor;
+  final WidgetBuilder? player;
+  final WidgetBuilder? details;
+  final Color? bgColor;
   final Function onRemove;
   final double bottomMargin;
-  final OverlayControllerData customControllers;
+  final OverlayControllerData? customControllers;
   FloatingWrapper(
       {this.player,
       this.details,
       this.bgColor,
-      @required this.onRemove,
+      required this.onRemove,
       this.bottomMargin: 80,
       this.customControllers,
-      Key key})
+      Key? key})
       : super(key: key);
 
   @override
@@ -30,21 +30,21 @@ class FloatingWrapper extends StatefulWidget {
 }
 
 class _FloatingWrapperState extends State<FloatingWrapper> {
-  final FloatingViewController floatingViewController =
+  final FloatingViewController? floatingViewController =
       Get.put(FloatingViewController(), permanent: true);
 
   @override
   void dispose() {
-    floatingViewController.playerDispose();
+    floatingViewController!.playerDispose();
     super.dispose();
   }
 
   @override
   void initState() {
-    floatingViewController.anchoringPosition(AnchoringPosition.maximized);
-    floatingViewController.customControllers = (f) => ControlsOverlay();
+    floatingViewController!.anchoringPosition(AnchoringPosition.maximized);
+    floatingViewController!.customControllers = (f) => ControlsOverlay();
     if (widget.customControllers != null) {
-      floatingViewController.customController = widget.customControllers;
+      floatingViewController!.customController = widget.customControllers;
     }
     super.initState();
   }
@@ -62,11 +62,11 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
               children: [
                 Obx(
                   () => IgnorePointer(
-                    ignoring: !model.isMaximized.value,
+                    ignoring: !model.isMaximized.value!,
                     child: AnimatedOpacity(
                       duration: Duration(milliseconds: 250),
                       opacity:
-                          (model.isMaximized.value && !model.dragging.value)
+                          (model.isMaximized.value! && !model.dragging.value!)
                               ? 1
                               : 0,
                       child: PLayerDetails(
@@ -86,7 +86,7 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
                   initialHeight: model.initialHeight,
                   touchDelay: Duration(milliseconds: 100),
                   child:
-                      widget.player != null ? widget.player(context) : Player(),
+                      widget.player != null ? widget.player!(context) : Player(),
                   initialPosition: AnchoringPosition.maximized,
                 ),
               ],

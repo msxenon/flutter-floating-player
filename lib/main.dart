@@ -1,3 +1,5 @@
+// @dart = 2.8
+
 import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player.dart';
@@ -71,7 +73,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Widget player;
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -126,7 +127,6 @@ class _SecState extends State<SecondPage> {
                     context,
                     (ctx) => Player(
                         playerData: PlayerData<String>(
-                            startPosition: Duration(seconds: 20 ?? 0),
                             itemId: 11,
                             videoItem: 'movieX',
                             savePosition: (x) {

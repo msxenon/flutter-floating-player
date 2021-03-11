@@ -4,10 +4,10 @@ import 'package:get/get.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
 
 class PLayerDetails extends StatelessWidget {
-  final WidgetBuilder child;
-  final Color bgColor;
+  final WidgetBuilder? child;
+  final Color? bgColor;
   PLayerDetails({
-    Key key,
+    Key? key,
     this.child,
     this.bgColor,
   }) : super(key: key);
@@ -27,7 +27,7 @@ class PLayerDetails extends StatelessWidget {
             child: !model.showDetails
                 ? SizedBox.shrink()
                 : child != null
-                    ? child(context)
+                    ? child!(context)
                     : ListView.builder(
                         itemBuilder: (_, index) => ListTile(
                           title: Text(

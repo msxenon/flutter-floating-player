@@ -12,12 +12,17 @@ class DeleteIconConfig {
   final Color iconColor;
   final Color backgroundColor;
   final IconData icon;
-  const DeleteIconConfig({this.maxSize: 50, this.minSize: 30, this.iconColor: Colors.white, this.backgroundColor: Colors.black54, this.icon: Icons.close});
+  const DeleteIconConfig(
+      {this.maxSize: 50,
+      this.minSize: 30,
+      this.iconColor: Colors.white,
+      this.backgroundColor: Colors.black54,
+      this.icon: Icons.close});
 }
 
 class DraggableWidget extends StatefulWidget {
-  final double initialHeight;
-  final Function onRemove;
+  final double? initialHeight;
+  final Function? onRemove;
   final Duration animatedViewsDuration;
   final DeleteIconConfig deleteIconConfig;
 
@@ -49,7 +54,7 @@ class DraggableWidget extends StatefulWidget {
   final double shadowBorderRadius;
 
   /// A drag controller to show/hide or move the widget around the screen
-  final DragController dragController;
+  final DragController? dragController;
 
   /// [BoxShadow] when the widget is not being dragged, default to
   /// ```Dart
@@ -77,8 +82,8 @@ class DraggableWidget extends StatefulWidget {
   /// Touch Delay Duration. Default value is zero. When set, drag operations will trigger after the duration.
   final Duration touchDelay;
   DraggableWidget({
-    Key key,
-    this.child,
+    Key? key,
+    required this.child,
     this.initialHeight: 202,
     this.horizontalSapce = 0,
     this.animatedViewsDuration = const Duration(milliseconds: 150),
@@ -118,30 +123,32 @@ class DraggableWidget extends StatefulWidget {
   _DraggableWidgetState createState() => _DraggableWidgetState();
 }
 
-class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderStateMixin {
+class _DraggableWidgetState extends State<DraggableWidget>
+    with TickerProviderStateMixin {
   FloatingViewController _floatingViewController = Get.find();
   final playerKey = GlobalKey();
   final deleteAreaKey = GlobalKey();
   bool _isAboutToDelete = false;
   double top = 0, left = 0;
   double boundary = 0;
-  AnimationController animationController;
-  Animation animation;
+  AnimationController? animationController;
+  late Animation animation;
   double hardLeft = 0, hardTop = 0;
   bool offstage = true;
   double get topMargin => widget.topSafeMargin ? Get.mediaQuery.padding.top : 0;
   double closePercentage = 0;
-  double get widgetHeight => getPlayerHeight();
+  double? get widgetHeight => getPlayerHeight();
   double get widgetWidth => getPlayerWidth();
 
-  AnchoringPosition get currentlyDocked => _floatingViewController.anchoringPosition.value;
+  AnchoringPosition? get currentlyDocked =>
+      _floatingViewController.anchoringPosition.value;
 
-  bool visible;
+  bool? visible;
 
   bool get currentVisibility => visible ?? widget.intialVisibility;
 
   double lastCaseYPos = 0;
-  TapDownDetails _downPointer;
+  late TapDownDetails _downPointer;
   @override
   void dispose() {
     animationController?.dispose();
@@ -172,13 +179,13 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
       begin: 0,
       end: 1,
     ).animate(CurvedAnimation(
-      parent: animationController,
+      parent: animationController!,
       curve: Curves.easeInOut,
     ));
 
     widget.dragController?._addState(this);
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) async {
       await Future<void>.delayed(Duration(
         milliseconds: 100,
       ));
@@ -186,7 +193,7 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
         offstage = false;
         boundary = MediaQuery.of(context).size.height - widget.bottomMargin;
         if (widget.initialPosition == AnchoringPosition.minimized) {
-          top = boundary - widgetHeight + widget.statusBarHeight;
+          top = boundary - widgetHeight! + widget.statusBarHeight;
           left = MediaQuery.of(context).size.width - widgetWidth;
         } else {
           top = topMargin;
@@ -194,9 +201,10 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
         }
       });
     });
-    _floatingViewController.setPlayerHeight(hardTop + getPlayerHeight());
+    _floatingViewController.setPlayerHeight(hardTop + getPlayerHeight()!);
     _floatingViewController.anchoringPosition.listen((x) {
-      print('draggable listener $x --- $mounted -- maximi => ${_floatingViewController.isMaximized.value} - drag => ${_floatingViewController.dragging.value}');
+      print(
+          'draggable listener $x --- $mounted -- maximi => ${_floatingViewController.isMaximized.value} - drag => ${_floatingViewController.dragging.value}');
       if (mounted) {
         _animateTo(x);
       }
@@ -207,7 +215,7 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
   @override
   void didUpdateWidget(DraggableWidget oldWidget) {
     if (offstage == false) {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
         setState(() {
           boundary = MediaQuery.of(context).size.height - widget.bottomMargin;
           animateWidget(currentlyDocked);
@@ -220,25 +228,29 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
   @override
   Widget build(BuildContext context) {
     var currentPost = top - widget.statusBarHeight;
-    var res = currentPost / (boundary - widget.initialHeight);
+    var res = currentPost / (boundary - widget.initialHeight!);
     var percentage = max(0.2, 1.0 - res);
     return Stack(
       children: [
         Positioned(
-          top: _floatingViewController.isFullScreen.value ? top - widget.statusBarHeight : top,
+          top: _floatingViewController.isFullScreen.value!
+              ? top - widget.statusBarHeight
+              : top,
           left: left,
           child: (!currentVisibility)
               ? Container()
               : Transform.scale(
                   alignment: Alignment.bottomRight,
-                  scale: _floatingViewController.isFullScreen.value ? 1 : percentage,
+                  scale: _floatingViewController.isFullScreen.value!
+                      ? 1
+                      : percentage,
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onTap: () {
                       _floatingViewController.toggleControllers();
                     },
                     onDoubleTap: () {
-                      if (_floatingViewController.isFullScreen.value) {
+                      if (_floatingViewController.isFullScreen.value!) {
                         return;
                       }
                       if (currentlyDocked == AnchoringPosition.minimized) {
@@ -253,33 +265,38 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                     },
                     onVerticalDragEnd: (v) {
                       _floatingViewController.dragging(false);
-                      if (_floatingViewController.isFullScreen.value) {
+                      if (_floatingViewController.isFullScreen.value!) {
                         return;
                       }
 
                       final p = Offset(left, top);
-                      bool switchPos = v.velocity.pixelsPerSecond.dy.abs() > 7000.0 ? true : false;
-                      _floatingViewController.anchoringPosition(determineDocker(p, switchPos || (top - lastCaseYPos).abs() > 100));
+                      bool switchPos =
+                          v.velocity.pixelsPerSecond.dy.abs() > 7000.0
+                              ? true
+                              : false;
+                      _floatingViewController.anchoringPosition(determineDocker(
+                          p, switchPos || (top - lastCaseYPos).abs() > 100));
 
-                      if (animationController.isAnimating) {
-                        animationController.stop();
+                      if (animationController!.isAnimating) {
+                        animationController!.stop();
                       }
-                      animationController.reset();
-                      animationController.forward();
+                      animationController!.reset();
+                      animationController!.forward();
                     },
                     onVerticalDragUpdate: (v) async {
-                      if (_floatingViewController.isFullScreen.value) {
+                      if (_floatingViewController.isFullScreen.value!) {
                         return;
                       }
                       _floatingViewController.dragging(true);
 
-                      if (animationController.isAnimating) {
-                        animationController.stop();
-                        animationController.reset();
+                      if (animationController!.isAnimating) {
+                        animationController!.stop();
+                        animationController!.reset();
                       }
                       setState(() {
-                        var pos = v.globalPosition.dy - (widgetHeight) / 2;
-                        if (pos < (boundary - (widget.initialHeight)) && v.globalPosition.dy > topMargin) {
+                        var pos = v.globalPosition.dy - widgetHeight! / 2;
+                        if (pos < (boundary - widget.initialHeight!) &&
+                            v.globalPosition.dy > topMargin) {
                           top = max(pos, topMargin);
                         }
                         left = max(v.globalPosition.dx - (widgetWidth), 0);
@@ -289,11 +306,11 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                       });
                     },
                     onHorizontalDragUpdate: (f) {
-                      if (!_floatingViewController.canClose.value) {
+                      if (!_floatingViewController.canClose.value!) {
                         return;
                       }
                       _floatingViewController.dragging(true);
-                      left = left + f.primaryDelta;
+                      left = left + f.primaryDelta!;
                       if (left <= hardLeft) {
                         closePercentage = hardLeft > 0
                             ? 1 - (left / hardLeft).abs()
@@ -307,7 +324,7 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                     },
                     onHorizontalDragEnd: (f) {
                       if (closePercentage == 1) {
-                        widget.onRemove();
+                        widget.onRemove!();
                       }
                       _animateTo(currentlyDocked);
                     },
@@ -322,36 +339,47 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                           child: AnimatedContainer(
                               key: playerKey,
                               duration: widget.animatedViewsDuration,
-                              foregroundDecoration: BoxDecoration(color: _isAboutToDelete ? Colors.red.withOpacity(0.5) : Colors.transparent),
+                              foregroundDecoration: BoxDecoration(
+                                  color: _isAboutToDelete
+                                      ? Colors.red.withOpacity(0.5)
+                                      : Colors.transparent),
                               width: getPlayerWidth(),
                               height: getPlayerHeight(),
                               decoration: BoxDecoration(
-                                boxShadow: [_floatingViewController.dragging.value ? widget.draggingShadow : widget.normalShadow],
+                                boxShadow: [
+                                  _floatingViewController.dragging.value!
+                                      ? widget.draggingShadow
+                                      : widget.normalShadow
+                                ],
                               ),
-                              child: Stack(fit: StackFit.expand, alignment: Alignment.center, children: [
-                                widget.child,
-                                IgnorePointer(
-                                  ignoring: true,
-                                  child: AnimatedOpacity(
-                                    opacity: closePercentage,
-                                    duration: widget.animatedViewsDuration,
-                                    child: Container(
-                                      key: deleteAreaKey,
-                                      padding: const EdgeInsets.all(8),
-                                      color: Colors.black87,
-                                      child: FittedBox(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(20),
-                                          child: Text(
-                                            'Close'.tr,
-                                            style: TextStyle(color: Colors.white),
+                              child: Stack(
+                                  fit: StackFit.expand,
+                                  alignment: Alignment.center,
+                                  children: [
+                                    widget.child,
+                                    IgnorePointer(
+                                      ignoring: true,
+                                      child: AnimatedOpacity(
+                                        opacity: closePercentage,
+                                        duration: widget.animatedViewsDuration,
+                                        child: Container(
+                                          key: deleteAreaKey,
+                                          padding: const EdgeInsets.all(8),
+                                          color: Colors.black87,
+                                          child: FittedBox(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(20),
+                                              child: Text(
+                                                'Close'.tr,
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              ]))),
+                                  ]))),
                     ),
                   ),
                 ),
@@ -376,8 +404,8 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
 
   bool get isAboveMaximizeGuideLine => (Get.height / 2) > top;
 
-  double getPlayerHeight() {
-    if (_floatingViewController.isFullScreen.value) {
+  double? getPlayerHeight() {
+    if (_floatingViewController.isFullScreen.value!) {
       return Get.height;
     } else {
       return widget.initialHeight;
@@ -397,34 +425,39 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
         return AnchoringPosition.maximized;
       }
     }
-    if (_downPointer.globalPosition.dy < upPos.dy || _downPointer.globalPosition.dy - upPos.dy < 200) {
+    if (_downPointer.globalPosition.dy < upPos.dy ||
+        _downPointer.globalPosition.dy - upPos.dy < 200) {
       return AnchoringPosition.minimized;
     } else {
       return AnchoringPosition.maximized;
     }
   }
 
-  void animateWidget(AnchoringPosition docker) {
+  void animateWidget(AnchoringPosition? docker) {
     final double totalHeight = boundary;
     final double totalWidth = Get.width;
-    if (_floatingViewController.isFullScreen.value) {
+    if (_floatingViewController.isFullScreen.value!) {
       return;
     }
     switch (docker) {
       case AnchoringPosition.minimized:
         double remaingDistanceX = (totalWidth - widgetWidth - hardLeft);
-        double remaingDistanceY = (totalHeight - widgetHeight - hardTop);
+        double remaingDistanceY = (totalHeight - widgetHeight! - hardTop);
         setState(() {
           left = hardLeft + (animation.value) * remaingDistanceX;
-          top = hardTop + (animation.value) * remaingDistanceY + (animation.value);
-          _floatingViewController.anchoringPosition(AnchoringPosition.minimized);
+          top = hardTop +
+              (animation.value) * remaingDistanceY +
+              (animation.value);
+          _floatingViewController
+              .anchoringPosition(AnchoringPosition.minimized);
         });
         break;
       case AnchoringPosition.maximized:
         setState(() {
           left = 0;
           top = topMargin;
-          _floatingViewController.anchoringPosition(AnchoringPosition.maximized);
+          _floatingViewController
+              .anchoringPosition(AnchoringPosition.maximized);
         });
         break;
       default:
@@ -444,15 +477,15 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
     });
   }
 
-  void _animateTo(AnchoringPosition anchoringPosition) {
-    if (animationController.isAnimating) {
-      animationController.stop();
+  void _animateTo(AnchoringPosition? anchoringPosition) {
+    if (animationController!.isAnimating) {
+      animationController!.stop();
     }
     closePercentage = 0;
-    animationController.reset();
+    animationController!.reset();
     _floatingViewController.dragging(false);
     _floatingViewController.anchoringPosition(anchoringPosition);
-    animationController.forward();
+    animationController!.forward();
   }
 
   Offset _getCurrentPosition() {
@@ -471,12 +504,12 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
   }
 
   Rect getPlayerRect() {
-    return playerKey.globalPaintBounds.deflate(40) ?? Rect.zero;
+    return playerKey.globalPaintBounds.deflate(40);
   }
 }
 
 class DragController {
-  _DraggableWidgetState _widgetState;
+  late _DraggableWidgetState _widgetState;
   void _addState(_DraggableWidgetState _widgetState) {
     this._widgetState = _widgetState;
   }
@@ -504,10 +537,11 @@ class DragController {
 
 extension GlobalKeyExtension on GlobalKey {
   Rect get globalPaintBounds {
-    final renderObject = currentContext?.findRenderObject();
-    var translation = renderObject?.getTransformTo(null)?.getTranslation();
-    if (translation != null && renderObject.paintBounds != null) {
-      return renderObject.paintBounds.shift(Offset(translation.x, translation.y));
+    final RenderObject? renderObject = currentContext?.findRenderObject();
+    var translation = renderObject?.getTransformTo(null).getTranslation();
+    if (translation != null && renderObject?.paintBounds != null) {
+      return renderObject!.paintBounds
+          .shift(Offset(translation.x, translation.y));
     } else {
       return Rect.zero;
     }
