@@ -130,7 +130,7 @@ class FloatingViewController extends GetxController {
   final Duration toggleOffDuration = const Duration(seconds: 5);
   late VlcPlayerController? videoPlayerController;
   late VideoPlayerController? subtitleController;
-  var controlsIsShowing = false.obs;
+  final RxBool  controlsIsShowing = false.obs;
   PlayerSettingsController? playerSettingsController =
       Get.put(PlayerSettingsController());
   bool get showDetails => detailsTopPadding > 0;
