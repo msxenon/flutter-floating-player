@@ -17,10 +17,20 @@ class Player extends StatefulWidget {
 
 class _PlayerState extends State<Player> {
   final FloatingViewController floatingViewController = Get.find();
+  bool showPLayer = false;
+
   @override
   void initState() {
-    floatingViewController.createController(widget.playerData);
+    _setControllers();
     super.initState();
+  }
+
+  void _setControllers() async {
+    await floatingViewController.createController(widget.playerData);
+    showPLayer = true;
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -28,6 +38,12 @@ class _PlayerState extends State<Player> {
     return GetBuilder<PlayerSettingsController>(
         init: floatingViewController.playerSettingsController,
         builder: (model) {
+          if (!showPLayer ||
+              floatingViewController
+                      .playerSettingsController.subtitleController ==
+                  null) {
+            return Center(child: CircularProgressIndicator());
+          }
           return SubTitleWrapper(
             key: Key(
                 floatingViewController.playerSettingsController.getVideo() +

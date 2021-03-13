@@ -7,6 +7,7 @@ import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_cont
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
 import 'package:subtitle_wrapper_package/subtitle_controller.dart';
+import 'package:wakelock/wakelock.dart';
 
 import '../../draggable_widget.dart';
 import '../mock_data.dart';
@@ -70,9 +71,9 @@ class PlayerSettingsController extends GetxController {
     return videoResolutions[selectedRes];
   }
 
-  void initSubtitles({String subtitleLink}) {
+  Future<void> initSubtitles({String subtitleLink}) async {
     this.link = subtitleLink;
-    _setSubtitle();
+    return _setSubtitle();
   }
 
   String getCaptionStringValue() {
@@ -85,7 +86,7 @@ class PlayerSettingsController extends GetxController {
     }
   }
 
-  void _setSubtitle() {
+  Future<void> _setSubtitle() async {
     var subtitleLink = link;
     var subtitleType = SubtitleType.values.firstWhere(
         (e) => subtitleLink.split('.')?.last == e.getName(),
@@ -97,6 +98,7 @@ class PlayerSettingsController extends GetxController {
         subtitleUrl: subtitleLink,
         subtitleType: subtitleType,
         showSubtitles: isEnabled);
+    return;
   }
 
   void toggleSubtitle(bool forceIsEnabled) {
@@ -122,11 +124,13 @@ class FloatingViewController extends GetxController {
   var controlsIsShowing = false.obs;
   PlayerSettingsController playerSettingsController =
       Get.put(PlayerSettingsController());
+
   bool get showDetails => detailsTopPadding > 0;
   double detailsTopPadding = 0;
   Size screenSize;
   double initialHeight;
   Timer controllerTimer;
+  Timer savePositionTimer;
   var anchoringPosition = AnchoringPosition.maximized.obs;
   var isFullScreen = false.obs;
   var isMaximized = true.obs;
@@ -189,7 +193,7 @@ class FloatingViewController extends GetxController {
     }
   }
 
-  void createController(PlayerData playerData) {
+  Future<void> createController(PlayerData playerData) async {
     _playerData = playerData;
     var videoRes = (playerData.videoRes == null || playerData.useMockData)
         ? {'BigBunny': MockData.mp4Bunny, 'Other': MockData.shortMovie}
@@ -198,11 +202,12 @@ class FloatingViewController extends GetxController {
         ? MockData.srt
         : playerData.subtitle;
     playerSettingsController.initVideoResolutions(videoRes);
-    setNewVideo();
-    playerSettingsController.initSubtitles(subtitleLink: subtitleLink);
+    await setNewVideo();
+    await playerSettingsController.initSubtitles(subtitleLink: subtitleLink);
+    return;
   }
 
-  void setNewVideo() {
+  Future<void> setNewVideo() async {
     videoPlayerController = VlcPlayerController.network(
         playerSettingsController.getVideo(),
         hwAcc: HwAcc.FULL,
@@ -210,15 +215,49 @@ class FloatingViewController extends GetxController {
         options: VlcPlayerOptions(), onInit: () async {
       if (_playerData?.startPosition != null) {
         await Future.delayed(Duration(milliseconds: 1000));
-        videoPlayerController.seekTo(_playerData.startPosition);
+        videoPlayerController?.seekTo(_playerData.startPosition);
       }
     }, autoInitialize: true);
+    // subtitleController =
+    //     VideoPlayerController.network(videoPlayerController.dataSource);
+    // subtitleController.value = VideoPlayerValue(
+    //   duration: videoPlayerController.value.duration,
+    //   position: videoPlayerController.value.position,
+    // );
+    videoPlayerController.addListener(() async {
+      // subtitleController.value = subtitleController.value.copyWith(
+      //   position: videoPlayerController!.value.position,
+      // );
+      await refreshWakelock();
+    });
+    // subtitleController.addListener(() {
+    //   print(
+    //       'subs addListener ${subtitleController.value.position.toString()}');
+    // });
+
+    return;
+  }
+
+  Future<void> refreshWakelock() async {
+    if (videoPlayerController.value.isPlaying) {
+      if (!await Wakelock.enabled) {
+        _startSavePositionTimer();
+        await Wakelock.enable();
+      }
+    } else {
+      if (await Wakelock.enabled) {
+        _stopSavePositionTimer();
+        await Wakelock.disable();
+      }
+    }
+    return;
   }
 
   @override
   void onClose() {
     removeOverlay();
     normalScreenOptions();
+    _stopSavePositionTimer();
     super.onClose();
   }
 
@@ -309,14 +348,15 @@ class FloatingViewController extends GetxController {
 
   void playerDispose() async {
     savePosition();
-    if (_playerData?.onDispose != null) {
-      _playerData?.onDispose();
-    }
+    _playerData?.onDispose();
   }
 
   void savePosition() {
     try {
-      final currentPos = videoPlayerController.value.position;
+      final currentPos = videoPlayerController?.value?.position;
+      if (currentPos == null) {
+        return;
+      }
       _playerData?.savePosition(SavePosition(
           seconds: currentPos.inSeconds,
           videoItem: _playerData.videoItem,
@@ -324,5 +364,19 @@ class FloatingViewController extends GetxController {
     } catch (e) {
       print(e);
     }
+  }
+
+  void _stopSavePositionTimer() {
+    savePositionTimer?.cancel();
+    savePositionTimer = null;
+  }
+
+  void _startSavePositionTimer() {
+    if (savePositionTimer != null) {
+      return;
+    }
+    savePositionTimer = Timer.periodic(Duration(minutes: 1), (timer) {
+      savePosition();
+    });
   }
 }
