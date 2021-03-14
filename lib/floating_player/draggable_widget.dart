@@ -12,7 +12,12 @@ class DeleteIconConfig {
   final Color iconColor;
   final Color backgroundColor;
   final IconData icon;
-  const DeleteIconConfig({this.maxSize: 50, this.minSize: 30, this.iconColor: Colors.white, this.backgroundColor: Colors.black54, this.icon: Icons.close});
+  const DeleteIconConfig(
+      {this.maxSize: 50,
+      this.minSize: 30,
+      this.iconColor: Colors.white,
+      this.backgroundColor: Colors.black54,
+      this.icon: Icons.close});
 }
 
 class DraggableWidget extends StatefulWidget {
@@ -118,7 +123,8 @@ class DraggableWidget extends StatefulWidget {
   _DraggableWidgetState createState() => _DraggableWidgetState();
 }
 
-class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderStateMixin {
+class _DraggableWidgetState extends State<DraggableWidget>
+    with TickerProviderStateMixin {
   FloatingViewController _floatingViewController = Get.find();
   final playerKey = GlobalKey();
   final deleteAreaKey = GlobalKey();
@@ -134,7 +140,8 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
   double get widgetHeight => getPlayerHeight();
   double get widgetWidth => getPlayerWidth();
 
-  AnchoringPosition get currentlyDocked => _floatingViewController.anchoringPosition.value;
+  AnchoringPosition get currentlyDocked =>
+      _floatingViewController.anchoringPosition.value;
 
   bool visible;
 
@@ -196,7 +203,8 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
     });
     _floatingViewController.setPlayerHeight(hardTop + getPlayerHeight());
     _floatingViewController.anchoringPosition.listen((x) {
-      print('draggable listener $x --- $mounted -- maximi => ${_floatingViewController.isMaximized.value} - drag => ${_floatingViewController.dragging.value}');
+      print(
+          'draggable listener $x --- $mounted -- maximi => ${_floatingViewController.isMaximized.value} - drag => ${_floatingViewController.dragging.value}');
       if (mounted) {
         _animateTo(x);
       }
@@ -225,13 +233,17 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
     return Stack(
       children: [
         Positioned(
-          top: _floatingViewController.isFullScreen.value ? top - widget.statusBarHeight : top,
+          top: _floatingViewController.isFullScreen.value
+              ? top - widget.statusBarHeight
+              : top,
           left: left,
           child: (!currentVisibility)
               ? Container()
               : Transform.scale(
                   alignment: Alignment.bottomRight,
-                  scale: _floatingViewController.isFullScreen.value ? 1 : percentage,
+                  scale: _floatingViewController.isFullScreen.value
+                      ? 1
+                      : percentage,
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onTap: () {
@@ -258,9 +270,16 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                       }
 
                       final p = Offset(left, top);
-                      bool switchPos = v.velocity.pixelsPerSecond.dy.abs() > 7000.0 ? true : false;
-                      _floatingViewController.anchoringPosition(determineDocker(p, switchPos || (top - lastCaseYPos).abs() > 100));
+                      // debugPrint(
+                      //     'onVerticalDragEnd  anchorPos: ${currentlyDocked} ==== ${top} - ${lastCaseYPos} = ${top - lastCaseYPos} > ${Get.height / 5}');
+                      bool switchPos =
+                          v.velocity.pixelsPerSecond.dy.abs() > 3000.0 ||
+                              (top - lastCaseYPos).abs() > Get.height / 5;
 
+                      _floatingViewController
+                          .anchoringPosition(determineDocker(p, switchPos));
+                      // debugPrint(
+                      //     'onVerticalDragEnd $switchPos / Velocity:${v.primaryVelocity} = ${v.velocity.pixelsPerSecond.dy} : dir:${v.velocity.pixelsPerSecond.distanceSquared} / anchorPos: ${_floatingViewController.anchoringPosition.value}');
                       if (animationController.isAnimating) {
                         animationController.stop();
                       }
@@ -279,7 +298,8 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                       }
                       setState(() {
                         var pos = v.globalPosition.dy - (widgetHeight) / 2;
-                        if (pos < (boundary - (widget.initialHeight)) && v.globalPosition.dy > topMargin) {
+                        if (pos < (boundary - (widget.initialHeight)) &&
+                            v.globalPosition.dy > topMargin) {
                           top = max(pos, topMargin);
                         }
                         left = max(v.globalPosition.dx - (widgetWidth), 0);
@@ -311,47 +331,63 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
                       }
                       _animateTo(currentlyDocked);
                     },
-                    child: Offstage(
-                      offstage: offstage,
-                      child: Container(
-                          alignment: Alignment.bottomRight,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: widget.horizontalSapce,
-                            vertical: widget.verticalSpace,
-                          ),
-                          child: AnimatedContainer(
-                              key: playerKey,
-                              duration: widget.animatedViewsDuration,
-                              foregroundDecoration: BoxDecoration(color: _isAboutToDelete ? Colors.red.withOpacity(0.5) : Colors.transparent),
-                              width: getPlayerWidth(),
-                              height: getPlayerHeight(),
-                              decoration: BoxDecoration(
-                                boxShadow: [_floatingViewController.dragging.value ? widget.draggingShadow : widget.normalShadow],
-                              ),
-                              child: Stack(fit: StackFit.expand, alignment: Alignment.center, children: [
-                                widget.child,
-                                IgnorePointer(
-                                  ignoring: true,
-                                  child: AnimatedOpacity(
-                                    opacity: closePercentage,
-                                    duration: widget.animatedViewsDuration,
-                                    child: Container(
-                                      key: deleteAreaKey,
-                                      padding: const EdgeInsets.all(8),
-                                      color: Colors.black87,
-                                      child: FittedBox(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(20),
-                                          child: Text(
-                                            'Close'.tr,
-                                            style: TextStyle(color: Colors.white),
+                    child: IgnorePointer(
+                      ignoring: _floatingViewController.dragging.value,
+                      child: Offstage(
+                        offstage: offstage,
+                        child: Container(
+                            alignment: Alignment.bottomRight,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: widget.horizontalSapce,
+                              vertical: widget.verticalSpace,
+                            ),
+                            child: AnimatedContainer(
+                                key: playerKey,
+                                duration: widget.animatedViewsDuration,
+                                foregroundDecoration: BoxDecoration(
+                                    color: _isAboutToDelete
+                                        ? Colors.red.withOpacity(0.5)
+                                        : Colors.transparent),
+                                width: getPlayerWidth(),
+                                height: getPlayerHeight(),
+                                decoration: BoxDecoration(
+                                  boxShadow: [
+                                    _floatingViewController.dragging.value
+                                        ? widget.draggingShadow
+                                        : widget.normalShadow
+                                  ],
+                                ),
+                                child: Stack(
+                                    fit: StackFit.expand,
+                                    alignment: Alignment.center,
+                                    children: [
+                                      widget.child,
+                                      IgnorePointer(
+                                        ignoring: true,
+                                        child: AnimatedOpacity(
+                                          opacity: closePercentage,
+                                          duration:
+                                              widget.animatedViewsDuration,
+                                          child: Container(
+                                            key: deleteAreaKey,
+                                            padding: const EdgeInsets.all(8),
+                                            color: Colors.black87,
+                                            child: FittedBox(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(20),
+                                                child: Text(
+                                                  'Close'.tr,
+                                                  style: TextStyle(
+                                                      color: Colors.white),
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                ),
-                              ]))),
+                                    ]))),
+                      ),
                     ),
                   ),
                 ),
@@ -364,14 +400,6 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
 
   double getPlayerWidth() {
     return Get.width;
-    // if (_floatingViewController.isFullScreen) {
-    //   return Get.width;
-    // }
-    // return dragging
-    //     ? initialWidth
-    //     : (currentDocker == null || currentDocker == AnchoringPosition.maximized)
-    //         ? initialWidth
-    //         : initialWidth * 0.3;
   }
 
   bool get isAboveMaximizeGuideLine => (Get.height / 2) > top;
@@ -382,11 +410,6 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
     } else {
       return widget.initialHeight;
     }
-    // return dragging
-    //     ? widget.initialHeight * (isAboveMaximizeGuideLine ? 1 : 0.5)
-    //     : (currentDocker == null || currentDocker == AnchoringPosition.maximized)
-    //         ? widget.initialHeight
-    //         : widget.initialHeight * 0.3;
   }
 
   AnchoringPosition determineDocker(Offset upPos, bool switchPos) {
@@ -397,10 +420,8 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
         return AnchoringPosition.maximized;
       }
     }
-    if (_downPointer.globalPosition.dy < upPos.dy || _downPointer.globalPosition.dy - upPos.dy < 200) {
-      return AnchoringPosition.minimized;
-    } else {
-      return AnchoringPosition.maximized;
+    if (_downPointer == null || !switchPos) {
+      return currentlyDocked;
     }
   }
 
@@ -416,15 +437,19 @@ class _DraggableWidgetState extends State<DraggableWidget> with TickerProviderSt
         double remaingDistanceY = (totalHeight - widgetHeight - hardTop);
         setState(() {
           left = hardLeft + (animation.value) * remaingDistanceX;
-          top = hardTop + (animation.value) * remaingDistanceY + (animation.value);
-          _floatingViewController.anchoringPosition(AnchoringPosition.minimized);
+          top = hardTop +
+              (animation.value) * remaingDistanceY +
+              (animation.value);
+          _floatingViewController
+              .anchoringPosition(AnchoringPosition.minimized);
         });
         break;
       case AnchoringPosition.maximized:
         setState(() {
           left = 0;
           top = topMargin;
-          _floatingViewController.anchoringPosition(AnchoringPosition.maximized);
+          _floatingViewController
+              .anchoringPosition(AnchoringPosition.maximized);
         });
         break;
       default:
@@ -507,7 +532,8 @@ extension GlobalKeyExtension on GlobalKey {
     final renderObject = currentContext?.findRenderObject();
     var translation = renderObject?.getTransformTo(null)?.getTranslation();
     if (translation != null && renderObject.paintBounds != null) {
-      return renderObject.paintBounds.shift(Offset(translation.x, translation.y));
+      return renderObject.paintBounds
+          .shift(Offset(translation.x, translation.y));
     } else {
       return Rect.zero;
     }
