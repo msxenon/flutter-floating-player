@@ -25,8 +25,8 @@ class MyApp extends StatelessWidget {
               primarySwatch: Colors.blue,
               visualDensity: VisualDensity.adaptivePlatformDensity,
             ),
-            home: Stack(children: [MyHomePage()]),
-            popGesture: true,
+            home: MyHomePage(),
+            popGesture: false,
           ),
           // Directionality(
           //   textDirection: TextDirection.rtl,

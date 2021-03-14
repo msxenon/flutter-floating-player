@@ -138,6 +138,7 @@ class FloatingViewController extends GetxController {
   var controllersCanBeVisible = true.obs;
   var canMinimize = true.obs;
   var canClose = true.obs;
+  var isUsingController = false.obs;
   OverlayEntry _overlayEntry;
   Color floatingBottomSheetBgColor = Colors.white;
   Color floatingBottomSheetTextColor = Colors.black87;
@@ -179,6 +180,13 @@ class FloatingViewController extends GetxController {
       }
       removeOverlay();
     });
+    ever(isUsingController, (f) {
+      if (isUsingController.value) {
+        controllerTimer?.cancel();
+      } else {
+        _startToggleOffTimer();
+      }
+    });
   }
 
   void toggleControllers() {
@@ -218,22 +226,9 @@ class FloatingViewController extends GetxController {
         videoPlayerController?.seekTo(_playerData.startPosition);
       }
     }, autoInitialize: true);
-    // subtitleController =
-    //     VideoPlayerController.network(videoPlayerController.dataSource);
-    // subtitleController.value = VideoPlayerValue(
-    //   duration: videoPlayerController.value.duration,
-    //   position: videoPlayerController.value.position,
-    // );
     videoPlayerController.addListener(() async {
-      // subtitleController.value = subtitleController.value.copyWith(
-      //   position: videoPlayerController!.value.position,
-      // );
       await refreshWakelock();
     });
-    // subtitleController.addListener(() {
-    //   print(
-    //       'subs addListener ${subtitleController.value.position.toString()}');
-    // });
 
     return;
   }

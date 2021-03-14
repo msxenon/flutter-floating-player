@@ -38,16 +38,10 @@ class _PlayerState extends State<Player> {
     return GetBuilder<PlayerSettingsController>(
         init: floatingViewController.playerSettingsController,
         builder: (model) {
-          if (!showPLayer ||
-              floatingViewController
-                      .playerSettingsController.subtitleController ==
-                  null) {
+          if (!showPLayer || model.subtitleController == null) {
             return Center(child: CircularProgressIndicator());
           }
           return SubTitleWrapper(
-            key: Key(
-                floatingViewController.playerSettingsController.getVideo() +
-                    'sub'),
             videoPlayerController: floatingViewController.videoPlayerController,
             subtitleController: model.subtitleController,
             subtitleStyle: SubtitleStyle(
@@ -56,8 +50,6 @@ class _PlayerState extends State<Player> {
               hasBorder: true,
             ),
             videoChild: VlcPlayerWithControls(
-              key: Key(
-                  floatingViewController.playerSettingsController.getVideo()),
               controller: floatingViewController.videoPlayerController,
             ),
           );
