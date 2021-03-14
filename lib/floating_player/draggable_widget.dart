@@ -227,14 +227,18 @@ class _DraggableWidgetState extends State<DraggableWidget>
 
   @override
   Widget build(BuildContext context) {
-    var currentPost = top - widget.statusBarHeight;
-    var res = currentPost / (boundary - widget.initialHeight);
-    var percentage = max(0.2, 1.0 - res);
+    var currentPosY = top - topMargin;
+    var res = currentPosY / (boundary - widget.initialHeight);
+    var percentage = max(0.4, 1.0 - res);
+    // print(
+    //     'getSize  ${Get.width} || ${MediaQuery.of(context).size.width}  $currentPosY (${top} - ${widget.statusBarHeight}) / (${boundary} - ${widget.initialHeight}) = $res => $percentage');
+    // print(
+    //     '(${currentPosY} / ${(boundary - widget.initialHeight)}) = $res => $percentage');
     return Stack(
       children: [
         Positioned(
           top: _floatingViewController.isFullScreen.value
-              ? top - widget.statusBarHeight
+              ? 0 //top - widget.statusBarHeight
               : top,
           left: left,
           child: (!currentVisibility)
