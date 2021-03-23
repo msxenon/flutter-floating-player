@@ -20,11 +20,13 @@ class PlayerData<T> {
   final Duration startPosition;
   final T videoItem;
   final int itemId;
+  final PlayType playType;
   final void Function(SavePosition<dynamic>) savePosition;
   final Function onDispose;
   const PlayerData(
       {this.videoItem,
       this.itemId,
+      this.playType = PlayType.video,
       this.onDispose,
       this.savePosition,
       this.videoRes,
@@ -32,3 +34,5 @@ class PlayerData<T> {
       this.useMockData: true,
       this.startPosition});
 }
+
+enum PlayType { live, video }

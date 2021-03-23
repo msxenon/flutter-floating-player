@@ -2,40 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/floating_player.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:get/get.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 import '../controllers/video_view_controller.dart';
 
 class PLayerNav {
-  static OverlayEntry overlayEntry;
-
-  static void showPlayer(BuildContext ctx, WidgetBuilder player, WidgetBuilder details, {Color bgColor, double bottomMargin: 80, OverlayControllerData customControllers}) async {
-    if (!clearViews('showPlayer', forceClear: true)) {
+  static OverlaySupportEntry overlayEntry;
+  static String _lastOverlayId;
+  static void showPlayer(
+      BuildContext _ctx, WidgetBuilder player, WidgetBuilder details,
+      {@required String overlayId,
+      Color bgColor,
+      double bottomMargin: 80,
+      OverlayControllerData customControllers}) async {
+    if (_lastOverlayId == overlayId) {
+      return;
+    } else if (!clearViews('showPlayer', forceClear: true)) {
       await Future.delayed(Duration(milliseconds: 200));
     }
-    overlayEntry = OverlayEntry(
-        maintainState: true,
-        opaque: false,
-        builder: (context) {
-          return FloatingWrapper(
-            customControllers: customControllers,
-            onRemove: () {
-              clearViews('onRemove', forceClear: true);
-            },
-            player: player,
-            details: details,
-            bgColor: bgColor,
-            bottomMargin: bottomMargin,
-          );
-        });
-    Overlay.of(ctx, rootOverlay: false).insert(overlayEntry);
+    _lastOverlayId = overlayId;
+    overlayEntry = showOverlay((context, double) {
+      return FloatingWrapper(
+        customControllers: customControllers,
+        onRemove: () {
+          clearViews('onRemove', forceClear: true);
+        },
+        player: player,
+        details: details,
+        bgColor: bgColor,
+        bottomMargin: bottomMargin,
+      );
+    }, key: ModalKey(overlayId), duration: Duration.zero);
   }
 
+  ///returns false if overlay just dismissed
   static bool clearViews(String tag, {bool forceClear: false}) {
     try {
-      print('clearView called $forceClear ${overlayEntry != null} $tag');
+      //print('clearView called $forceClear ${overlayEntry != null} $tag');
       if (forceClear && overlayEntry != null) {
-        overlayEntry.remove();
+        overlayEntry.dismiss(animate: false);
         overlayEntry = null;
+        _lastOverlayId = null;
         final controller = Get.find<FloatingViewController>();
         controller.onClose();
         return false;
@@ -44,7 +51,8 @@ class PLayerNav {
         if (controller.isFullScreen.value) {
           controller.toggleFullScreen();
           return false;
-        } else if (controller.isMaximized.value && !controller.overlayJustRemoved()) {
+        } else if (controller.isMaximized.value &&
+            !controller.overlayJustRemoved()) {
           controller.minimize();
           return false;
         }

@@ -139,7 +139,6 @@ class _DraggableWidgetState extends State<DraggableWidget>
   double closePercentage = 0;
   double get widgetHeight => getPlayerHeight();
   double get widgetWidth => getPlayerWidth();
-
   AnchoringPosition get currentlyDocked =>
       _floatingViewController.anchoringPosition.value;
 
@@ -230,10 +229,10 @@ class _DraggableWidgetState extends State<DraggableWidget>
     var currentPosY = top - topMargin;
     var res = currentPosY / (boundary - widget.initialHeight);
     var percentage = max(0.4, 1.0 - res);
-    // print(
-    //     'getSize  ${Get.width} || ${MediaQuery.of(context).size.width}  $currentPosY (${top} - ${widget.statusBarHeight}) / (${boundary} - ${widget.initialHeight}) = $res => $percentage');
-    // print(
-    //     '(${currentPosY} / ${(boundary - widget.initialHeight)}) = $res => $percentage');
+    print(
+        'getSize  ${Get.width} || ${MediaQuery.of(context).size.width}  $currentPosY (${top} - ${widget.statusBarHeight}) / (${boundary} - ${widget.initialHeight}) = $res => $percentage');
+    print(
+        '(${currentPosY} / ${(boundary - widget.initialHeight)}) = $res => $percentage');
     return Stack(
       children: [
         Positioned(
@@ -278,7 +277,8 @@ class _DraggableWidgetState extends State<DraggableWidget>
                       //     'onVerticalDragEnd  anchorPos: ${currentlyDocked} ==== ${top} - ${lastCaseYPos} = ${top - lastCaseYPos} > ${Get.height / 5}');
                       bool switchPos =
                           v.velocity.pixelsPerSecond.dy.abs() > 3000.0 ||
-                              (top - lastCaseYPos).abs() > Get.height / 5;
+                              (top - lastCaseYPos).abs() >
+                                  MediaQuery.of(context).size.height / 5;
 
                       _floatingViewController
                           .anchoringPosition(determineDocker(p, switchPos));
@@ -400,17 +400,16 @@ class _DraggableWidgetState extends State<DraggableWidget>
     );
   }
 
-  final double initialWidth = Get.width;
-
   double getPlayerWidth() {
-    return Get.width;
+    return MediaQuery.of(Get.context).size.width;
   }
 
-  bool get isAboveMaximizeGuideLine => (Get.height / 2) > top;
+  bool get isAboveMaximizeGuideLine =>
+      (MediaQuery.of(Get.context).size.height / 2) > top;
 
   double getPlayerHeight() {
     if (_floatingViewController.isFullScreen.value) {
-      return Get.height;
+      return MediaQuery.of(Get.context).size.height;
     } else {
       return widget.initialHeight;
     }
@@ -431,7 +430,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
 
   void animateWidget(AnchoringPosition docker) {
     final double totalHeight = boundary;
-    final double totalWidth = Get.width;
+    final double totalWidth = getPlayerWidth();
     if (_floatingViewController.isFullScreen.value) {
       return;
     }

@@ -156,7 +156,8 @@ class FloatingViewController extends GetxController {
 
   FloatingViewController({this.screenSize}) {
     if (screenSize?.width == null) {
-      screenSize = Size(Get.width, Get.height);
+      screenSize = Size(MediaQuery.of(Get.context).size.width,
+          MediaQuery.of(Get.context).size.height);
     }
     initialHeight = screenSize.width / (16 / 9);
     anchoringPosition.listen((x) {
@@ -359,6 +360,18 @@ class FloatingViewController extends GetxController {
     } catch (e) {
       print(e);
     }
+  }
+
+  PlayerData pLayData() {
+    return _playerData;
+  }
+
+  bool isLive() {
+    return _playerData.playType == PlayType.live;
+  }
+
+  bool hasOptions() {
+    return _playerData.subtitle != null;
   }
 
   void _stopSavePositionTimer() {

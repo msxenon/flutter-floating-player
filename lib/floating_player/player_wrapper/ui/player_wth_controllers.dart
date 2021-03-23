@@ -9,7 +9,11 @@ import 'package:get/get.dart';
 import 'controls_overlay.dart';
 
 typedef OverlayControllerData = Widget Function(
-    {@required String position, @required String duration, @required double sliderValue, @required Function(double) sliderUpdate, @required VlcPlayerController controller});
+    {@required String position,
+    @required String duration,
+    @required double sliderValue,
+    @required Function(double) sliderUpdate,
+    @required VlcPlayerController controller});
 
 class VlcPlayerWithControls extends StatefulWidget {
   final VlcPlayerController controller;
@@ -24,7 +28,8 @@ class VlcPlayerWithControls extends StatefulWidget {
   VlcPlayerWithControlsState createState() => VlcPlayerWithControlsState();
 }
 
-class VlcPlayerWithControlsState extends State<VlcPlayerWithControls> with AutomaticKeepAliveClientMixin {
+class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
+    with AutomaticKeepAliveClientMixin {
   VlcPlayerController _controller;
   final FloatingViewController _floatingViewController = Get.find();
 
@@ -69,8 +74,10 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls> with Autom
         if (oDuration.inHours == 0) {
           var strPosition = oPosition.toString().split('.')[0];
           var strDuration = oDuration.toString().split('.')[0];
-          position = "${strPosition.split(':')[1]}:${strPosition.split(':')[2]}";
-          duration = "${strDuration.split(':')[1]}:${strDuration.split(':')[2]}";
+          position =
+              "${strPosition.split(':')[1]}:${strPosition.split(':')[2]}";
+          duration =
+              "${strDuration.split(':')[1]}:${strDuration.split(':')[2]}";
         } else {
           position = oPosition.toString().split('.')[0];
           duration = oDuration.toString().split('.')[0];
@@ -157,12 +164,16 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls> with Autom
                 itemBuilder: (context, index) {
                   return ListTile(
                     title: Text(
-                      index < subtitleTracks.keys.length ? subtitleTracks.values.elementAt(index).toString() : 'Disable',
+                      index < subtitleTracks.keys.length
+                          ? subtitleTracks.values.elementAt(index).toString()
+                          : 'Disable',
                     ),
                     onTap: () {
                       Navigator.pop(
                         context,
-                        index < subtitleTracks.keys.length ? subtitleTracks.keys.elementAt(index) : -1,
+                        index < subtitleTracks.keys.length
+                            ? subtitleTracks.keys.elementAt(index)
+                            : -1,
                       );
                     },
                   );
@@ -195,12 +206,16 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls> with Autom
                 itemBuilder: (context, index) {
                   return ListTile(
                     title: Text(
-                      index < audioTracks.keys.length ? audioTracks.values.elementAt(index).toString() : 'Disable',
+                      index < audioTracks.keys.length
+                          ? audioTracks.values.elementAt(index).toString()
+                          : 'Disable',
                     ),
                     onTap: () {
                       Navigator.pop(
                         context,
-                        index < audioTracks.keys.length ? audioTracks.keys.elementAt(index) : -1,
+                        index < audioTracks.keys.length
+                            ? audioTracks.keys.elementAt(index)
+                            : -1,
                       );
                     },
                   );
@@ -233,12 +248,16 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls> with Autom
                 itemBuilder: (context, index) {
                   return ListTile(
                     title: Text(
-                      index < castDevices.keys.length ? castDevices.values.elementAt(index).toString() : 'Disconnect',
+                      index < castDevices.keys.length
+                          ? castDevices.values.elementAt(index).toString()
+                          : 'Disconnect',
                     ),
                     onTap: () {
                       Navigator.pop(
                         context,
-                        index < castDevices.keys.length ? castDevices.keys.elementAt(index) : null,
+                        index < castDevices.keys.length
+                            ? castDevices.keys.elementAt(index)
+                            : null,
                       );
                     },
                   );
@@ -250,7 +269,8 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls> with Autom
       );
       await _controller.castToRenderer(selectedCastDeviceName);
     } else {
-      Scaffold.of(context).showSnackBar(SnackBar(content: Text('No Display Device Found!')));
+      Scaffold.of(context)
+          .showSnackBar(SnackBar(content: Text('No Display Device Found!')));
     }
   }
 
@@ -263,7 +283,8 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls> with Autom
   }
 }
 
-showFloatingBottomSheet(BuildContext context, FloatingViewController floatingViewController, List<Widget> list) {
+showFloatingBottomSheet(BuildContext context,
+    FloatingViewController floatingViewController, List<Widget> list) {
   floatingViewController.showOverlay(context, (context) {
     return Positioned.fill(
       child: GestureDetector(
@@ -285,64 +306,111 @@ showFloatingBottomSheet(BuildContext context, FloatingViewController floatingVie
                             floatingViewController: floatingViewController,
                             title: 'Captions'.tr,
                             icon: Icons.closed_caption_outlined,
-                            titleStatus: floatingViewController.playerSettingsController.getCaptionStringValue(),
-                            onTap: floatingViewController.playerSettingsController.isEnabled == null
+                            titleStatus: floatingViewController
+                                .playerSettingsController
+                                .getCaptionStringValue(),
+                            onTap: floatingViewController
+                                        .playerSettingsController.isEnabled ==
+                                    null
                                 ? null
                                 : () {
-                                    showFloatingBottomSheet(context, floatingViewController, [
+                                    showFloatingBottomSheet(
+                                        context, floatingViewController, [
                                       FloatingSheetListTile(
-                                        floatingViewController: floatingViewController,
-                                        selected: floatingViewController.playerSettingsController.isEnabled == false,
+                                        floatingViewController:
+                                            floatingViewController,
+                                        selected: floatingViewController
+                                                .playerSettingsController
+                                                .isEnabled ==
+                                            false,
                                         title: 'Off'.tr,
-                                        onTap: () => floatingViewController.playerSettingsController.toggleSubtitle(false),
+                                        onTap: () => floatingViewController
+                                            .playerSettingsController
+                                            .toggleSubtitle(false),
                                       ),
                                       FloatingSheetListTile(
-                                        floatingViewController: floatingViewController,
-                                        selected: floatingViewController.playerSettingsController.isEnabled,
+                                        floatingViewController:
+                                            floatingViewController,
+                                        selected: floatingViewController
+                                            .playerSettingsController.isEnabled,
                                         title: 'Arabic'.tr,
-                                        onTap: () => floatingViewController.playerSettingsController.toggleSubtitle(true),
+                                        onTap: () => floatingViewController
+                                            .playerSettingsController
+                                            .toggleSubtitle(true),
                                       ),
                                     ]);
                                   },
                           ),
-                          if (floatingViewController.playerSettingsController.isEnabled)
+                          if (floatingViewController
+                              .playerSettingsController.isEnabled)
                             FloatingSheetListTile(
                               floatingViewController: floatingViewController,
                               title: 'Text_size'.tr,
                               icon: Icons.text_fields_outlined,
-                              titleStatus: floatingViewController.playerSettingsController.textEnum.toString().split('.')[1].capitalize,
+                              titleStatus: floatingViewController
+                                  .playerSettingsController.textEnum
+                                  .toString()
+                                  .split('.')[1]
+                                  .capitalize,
                               onTap: () {
                                 showFloatingBottomSheet(
                                     context,
                                     floatingViewController,
-                                    List.generate(TextSizes.values.length, (index) {
+                                    List.generate(TextSizes.values.length,
+                                        (index) {
                                       var key = TextSizes.values[index];
                                       return FloatingSheetListTile(
-                                        floatingViewController: floatingViewController,
-                                        selected: floatingViewController.playerSettingsController.textEnum == key,
-                                        title: key.toString().split('.')[1].capitalize,
-                                        onTap: () => floatingViewController.playerSettingsController.setTextSize(key),
+                                        floatingViewController:
+                                            floatingViewController,
+                                        selected: floatingViewController
+                                                .playerSettingsController
+                                                .textEnum ==
+                                            key,
+                                        title: key
+                                            .toString()
+                                            .split('.')[1]
+                                            .capitalize,
+                                        onTap: () => floatingViewController
+                                            .playerSettingsController
+                                            .setTextSize(key),
                                       );
                                     }));
                               },
                             ),
-                          if (floatingViewController.playerSettingsController.videoResolutions.length > 1)
+                          if (floatingViewController.playerSettingsController
+                                  .videoResolutions.length >
+                              1)
                             FloatingSheetListTile(
                               floatingViewController: floatingViewController,
                               title: 'Video_Resolution'.tr,
                               icon: Icons.video_settings_outlined,
-                              titleStatus: floatingViewController.playerSettingsController.selectedRes,
+                              titleStatus: floatingViewController
+                                  .playerSettingsController.selectedRes,
                               onTap: () {
                                 showFloatingBottomSheet(
                                     context,
                                     floatingViewController,
-                                    List.generate(floatingViewController.playerSettingsController.videoResolutions.length, (index) {
-                                      var key = floatingViewController.playerSettingsController.videoResolutions.keys.toList()[index];
+                                    List.generate(
+                                        floatingViewController
+                                            .playerSettingsController
+                                            .videoResolutions
+                                            .length, (index) {
+                                      var key = floatingViewController
+                                          .playerSettingsController
+                                          .videoResolutions
+                                          .keys
+                                          .toList()[index];
                                       return FloatingSheetListTile(
-                                        floatingViewController: floatingViewController,
-                                        selected: floatingViewController.playerSettingsController.selectedRes == key,
+                                        floatingViewController:
+                                            floatingViewController,
+                                        selected: floatingViewController
+                                                .playerSettingsController
+                                                .selectedRes ==
+                                            key,
                                         title: key,
-                                        onTap: () => floatingViewController.playerSettingsController.changeVideoRes(key),
+                                        onTap: () => floatingViewController
+                                            .playerSettingsController
+                                            .changeVideoRes(key),
                                       );
                                     }));
                               },
@@ -351,7 +419,8 @@ showFloatingBottomSheet(BuildContext context, FloatingViewController floatingVie
                       ..addAll([
                         Container(
                           height: 1,
-                          color: floatingViewController.floatingBottomSheetDivColor,
+                          color: floatingViewController
+                              .floatingBottomSheetDivColor,
                         ),
                         FloatingSheetListTile(
                           floatingViewController: floatingViewController,
@@ -379,29 +448,44 @@ class FloatingSheetListTile extends StatelessWidget {
   final String titleStatus;
   final bool selected;
   final IconData icon;
-  const FloatingSheetListTile({Key key, @required this.floatingViewController, this.onTap, this.selected, @required this.title, this.titleStatus, this.icon}) : super(key: key);
+  const FloatingSheetListTile(
+      {Key key,
+      @required this.floatingViewController,
+      this.onTap,
+      this.selected,
+      @required this.title,
+      this.titleStatus,
+      this.icon})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(
         icon ?? Icons.check,
-        color: (selected == true || icon != null) ? floatingViewController.floatingBottomSheetTextColor : Colors.transparent,
+        color: (selected == true || icon != null)
+            ? floatingViewController.floatingBottomSheetTextColor
+            : Colors.transparent,
       ),
       title: RichText(
         text: TextSpan(children: [
           TextSpan(
             text: title,
-            style: TextStyle(color: floatingViewController.floatingBottomSheetTextColor),
+            style: TextStyle(
+                color: floatingViewController.floatingBottomSheetTextColor),
           ),
           if (titleStatus != null)
             TextSpan(
               text: ' - ',
-              style: TextStyle(color: floatingViewController.floatingBottomSheetTextColor.withOpacity(0.5)),
+              style: TextStyle(
+                  color: floatingViewController.floatingBottomSheetTextColor
+                      .withOpacity(0.5)),
             ),
           if (titleStatus != null)
             TextSpan(
               text: titleStatus,
-              style: TextStyle(color: floatingViewController.floatingBottomSheetTextColor.withOpacity(0.5)),
+              style: TextStyle(
+                  color: floatingViewController.floatingBottomSheetTextColor
+                      .withOpacity(0.5)),
             ),
         ]),
       ),
@@ -426,7 +510,8 @@ class FloatingBottomSheet extends StatefulWidget {
   }
 }
 
-class _FloatingBottomSheetState extends State<FloatingBottomSheet> with SingleTickerProviderStateMixin {
+class _FloatingBottomSheetState extends State<FloatingBottomSheet>
+    with SingleTickerProviderStateMixin {
   bool show = false;
   @override
   void initState() {
@@ -449,8 +534,11 @@ class _FloatingBottomSheetState extends State<FloatingBottomSheet> with SingleTi
     return AnimatedContainer(
       duration: Duration(milliseconds: 100),
       alignment: Alignment.topLeft,
-      width: Get.width,
-      height: show ? min(Get.height, (widget.children.length * 50.0) + 10) : 0,
+      width: MediaQuery.of(Get.context).size.width,
+      height: show
+          ? min(MediaQuery.of(context).size.height,
+              (widget.children.length * 50.0) + 10)
+          : 0,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: widget.floatingViewController.floatingBottomSheetBgColor,

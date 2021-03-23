@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player.dart';
 import 'package:get/get.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 import 'floating_player/player_wrapper/navigation/player_nav.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(OverlaySupport(child: MyApp()));
+}
+
+void initPlayer() {
+  kNotificationSlideDuration = const Duration(milliseconds: 0);
+  kNotificationDuration = const Duration(milliseconds: 0);
 }
 
 GlobalKey<NavigatorState> playerOverFlowKey = GlobalKey();
@@ -109,6 +115,29 @@ class SecondPage extends StatefulWidget {
   _SecState createState() => _SecState();
 }
 
+void showPLayer(String id) {
+  PLayerNav.showPlayer(
+      null,
+      (context) => Player(
+          playerData: PlayerData<String>(
+              startPosition: Duration(seconds: 20 ?? 0),
+              onDispose: () {},
+              itemId: 11,
+              videoItem: 'movieX',
+              savePosition: (x) {
+                print('savePos callback $x');
+              })),
+      (_) => FlatButton(
+          onPressed: () {
+            showPLayer(id + 'kdk');
+          },
+          child: Text(
+            'Play nested',
+            style: TextStyle(color: Colors.white),
+          )),
+      overlayId: id);
+}
+
 class _SecState extends State<SecondPage> {
   @override
   Widget build(BuildContext context) {
@@ -122,17 +151,13 @@ class _SecState extends State<SecondPage> {
           children: <Widget>[
             RaisedButton(
               onPressed: () {
-                PLayerNav.showPlayer(
-                    context,
-                    (ctx) => Player(
-                        playerData: PlayerData<String>(
-                            startPosition: Duration(seconds: 20 ?? 0),
-                            itemId: 11,
-                            videoItem: 'movieX',
-                            savePosition: (x) {
-                              print('savePos callback $x');
-                            })),
-                    null);
+                showPLayer('33');
+              },
+              child: Text('Open Floating Player Screen'),
+            ),
+            RaisedButton(
+              onPressed: () {
+                showPLayer('44');
               },
               child: Text('Open Floating Player Screen'),
             ),
