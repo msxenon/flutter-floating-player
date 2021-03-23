@@ -10,8 +10,9 @@ class PLayerNav {
   static OverlaySupportEntry overlayEntry;
   static String _lastOverlayId;
   static void showPlayer(
-      BuildContext _ctx, WidgetBuilder player, WidgetBuilder details,
-      {@required String overlayId,
+      {WidgetBuilder player,
+      WidgetBuilder details,
+      @required String overlayId,
       Color bgColor,
       double bottomMargin: 80,
       OverlayControllerData customControllers}) async {

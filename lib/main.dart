@@ -117,8 +117,7 @@ class SecondPage extends StatefulWidget {
 
 void showPLayer(String id) {
   PLayerNav.showPlayer(
-      null,
-      (context) => Player(
+      player: (context) => Player(
           playerData: PlayerData<String>(
               startPosition: Duration(seconds: 20 ?? 0),
               onDispose: () {},
@@ -127,7 +126,7 @@ void showPLayer(String id) {
               savePosition: (x) {
                 print('savePos callback $x');
               })),
-      (_) => FlatButton(
+      details: (_) => FlatButton(
           onPressed: () {
             showPLayer(id + 'kdk');
           },
