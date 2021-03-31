@@ -16,7 +16,7 @@ typedef OverlayControllerData = Widget Function(
     @required VlcPlayerController controller});
 
 class VlcPlayerWithControls extends StatefulWidget {
-  final VlcPlayerController controller;
+  final FloatingViewController controller;
 
   VlcPlayerWithControls({
     Key key,
@@ -30,9 +30,6 @@ class VlcPlayerWithControls extends StatefulWidget {
 
 class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
     with AutomaticKeepAliveClientMixin {
-  VlcPlayerController _controller;
-  final FloatingViewController _floatingViewController = Get.find();
-
   //
   final double initSnapshotRightPosition = 10;
   final double initSnapshotBottomPosition = 10;
@@ -54,22 +51,15 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
   @override
   void initState() {
     super.initState();
-    _controller = widget.controller;
-    _controller.addListener(listener);
-  }
-
-  @override
-  void dispose() {
-    _controller.removeListener(listener);
-    super.dispose();
+    widget.controller.videoPlayerController.addListener(listener);
   }
 
   void listener() async {
     if (!mounted) return;
     //
-    if (_controller.value.isInitialized) {
-      var oPosition = _controller.value.position;
-      var oDuration = _controller.value.duration;
+    if (widget.controller.videoPlayerController.value.isInitialized) {
+      var oPosition = widget.controller.videoPlayerController.value.position;
+      var oDuration = widget.controller.videoPlayerController.value.duration;
       if (oPosition != null && oDuration != null) {
         if (oDuration.inHours == 0) {
           var strPosition = oPosition.toString().split('.')[0];
@@ -82,10 +72,14 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
           position = oPosition.toString().split('.')[0];
           duration = oDuration.toString().split('.')[0];
         }
-        setSliderValue(_controller.value.position.inSeconds.toDouble());
+        setSliderValue(widget
+            .controller.videoPlayerController.value.position.inSeconds
+            .toDouble());
       }
-      numberOfCaptions = _controller.value.spuTracksCount;
-      numberOfAudioTracks = _controller.value.audioTracksCount;
+      numberOfCaptions =
+          widget.controller.videoPlayerController.value.spuTracksCount;
+      numberOfAudioTracks =
+          widget.controller.videoPlayerController.value.audioTracksCount;
       //
       setState(() {});
     }
@@ -103,14 +97,14 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
             children: <Widget>[
               Center(
                 child: VlcPlayer(
-                  controller: _controller,
+                  controller: widget.controller.videoPlayerController,
                   aspectRatio: 16 / 9,
                   placeholder: Center(child: CircularProgressIndicator()),
                 ),
               ),
-              _floatingViewController.customController != null
-                  ? _floatingViewController.customController(
-                      controller: _controller,
+              widget.controller.customController != null
+                  ? widget.controller.customController(
+                      controller: widget.controller.videoPlayerController,
                       position: position,
                       duration: duration,
                       sliderValue: sliderValue,
@@ -120,7 +114,7 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
                         });
                       })
                   : ControlsOverlay(
-                      controller: _controller,
+                      controller: widget.controller,
                       position: position,
                       duration: duration,
                       sliderValue: sliderValue,
@@ -138,148 +132,13 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
   }
 
   setSliderValue(double newSliderValue) {
-    if (_controller.value.isEnded) {
-      sliderValue = _controller.value.duration.inSeconds.toDouble();
+    if (widget.controller.videoPlayerController.value.isEnded) {
+      sliderValue = widget
+          .controller.videoPlayerController.value.duration.inSeconds
+          .toDouble();
     } else {
       sliderValue = newSliderValue;
     }
-  }
-
-  void _getSubtitleTracks() async {
-    if (!_controller.value.isPlaying) return;
-
-    var subtitleTracks = await _controller.getSpuTracks();
-    //
-    if (subtitleTracks != null && subtitleTracks.isNotEmpty) {
-      var selectedSubId = await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Select Subtitle'),
-            content: Container(
-              width: double.maxFinite,
-              height: 250,
-              child: ListView.builder(
-                itemCount: subtitleTracks.keys.length + 1,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(
-                      index < subtitleTracks.keys.length
-                          ? subtitleTracks.values.elementAt(index).toString()
-                          : 'Disable',
-                    ),
-                    onTap: () {
-                      Navigator.pop(
-                        context,
-                        index < subtitleTracks.keys.length
-                            ? subtitleTracks.keys.elementAt(index)
-                            : -1,
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          );
-        },
-      );
-      if (selectedSubId != null) await _controller.setSpuTrack(selectedSubId);
-    }
-  }
-
-  void _getAudioTracks() async {
-    if (!_controller.value.isPlaying) return;
-
-    var audioTracks = await _controller.getAudioTracks();
-    //
-    if (audioTracks != null && audioTracks.isNotEmpty) {
-      var selectedAudioTrackId = await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Select Audio'),
-            content: Container(
-              width: double.maxFinite,
-              height: 250,
-              child: ListView.builder(
-                itemCount: audioTracks.keys.length + 1,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(
-                      index < audioTracks.keys.length
-                          ? audioTracks.values.elementAt(index).toString()
-                          : 'Disable',
-                    ),
-                    onTap: () {
-                      Navigator.pop(
-                        context,
-                        index < audioTracks.keys.length
-                            ? audioTracks.keys.elementAt(index)
-                            : -1,
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          );
-        },
-      );
-      if (selectedAudioTrackId != null) {
-        await _controller.setAudioTrack(selectedAudioTrackId);
-      }
-    }
-  }
-
-  void _getRendererDevices() async {
-    var castDevices = await _controller.getRendererDevices();
-    //
-    if (castDevices != null && castDevices.isNotEmpty) {
-      var selectedCastDeviceName = await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Display Devices'),
-            content: Container(
-              width: double.maxFinite,
-              height: 250,
-              child: ListView.builder(
-                itemCount: castDevices.keys.length + 1,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(
-                      index < castDevices.keys.length
-                          ? castDevices.values.elementAt(index).toString()
-                          : 'Disconnect',
-                    ),
-                    onTap: () {
-                      Navigator.pop(
-                        context,
-                        index < castDevices.keys.length
-                            ? castDevices.keys.elementAt(index)
-                            : null,
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          );
-        },
-      );
-      await _controller.castToRenderer(selectedCastDeviceName);
-    } else {
-      Scaffold.of(context)
-          .showSnackBar(SnackBar(content: Text('No Display Device Found!')));
-    }
-  }
-
-  void _createCameraImage() async {
-    // var snapshot = await _controller.takeSnapshot();
-    // _overlayEntry?.remove();
-    // _overlayEntry = _createSnapshotThumbnail(snapshot);
-    // Overlay.of(context).insert(_overlayEntry);
-    // _floatingViewController.showOverlay(context, (context) => null)
   }
 }
 

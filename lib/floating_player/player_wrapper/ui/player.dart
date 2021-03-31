@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:get/get.dart';
@@ -7,16 +6,15 @@ import 'package:subtitle_wrapper_package/data/models/style/subtitle_style.dart';
 import 'package:subtitle_wrapper_package/subtitle_wrapper_package.dart';
 
 class Player extends StatefulWidget {
-  final PlayerData playerData;
-  const Player({Key key, this.playerData = const PlayerData()})
+  Player({Key key, @required this.floatingViewController, @required this.tag})
       : super(key: key);
-
+  final FloatingViewController floatingViewController;
+  final String tag;
   @override
   _PlayerState createState() => _PlayerState();
 }
 
 class _PlayerState extends State<Player> {
-  final FloatingViewController floatingViewController = Get.find();
   bool showPLayer = false;
 
   @override
@@ -26,7 +24,7 @@ class _PlayerState extends State<Player> {
   }
 
   void _setControllers() async {
-    await floatingViewController.createController(widget.playerData);
+    await widget.floatingViewController.createController();
     showPLayer = true;
     if (mounted) {
       setState(() {});
@@ -35,22 +33,28 @@ class _PlayerState extends State<Player> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<PlayerSettingsController>(
-        init: floatingViewController.playerSettingsController,
+    return GetBuilder<FloatingViewController>(
+        init: widget.floatingViewController,
+        tag: widget.tag,
+        key: Key(widget.tag),
         builder: (model) {
-          if (!showPLayer || model.subtitleController == null) {
+          if (model.playerSettingsController.subtitleController == null ||
+              !showPLayer) {
             return Center(child: CircularProgressIndicator());
           }
           return SubTitleWrapper(
-            videoPlayerController: floatingViewController.videoPlayerController,
-            subtitleController: model.subtitleController,
+            videoPlayerController: model.playerSettingsController,
+            subtitleController:
+                model.playerSettingsController.subtitleController,
             subtitleStyle: SubtitleStyle(
               textColor: Colors.white,
-              fontSize: model.isEnabled ? model.textSize : 0,
+              fontSize: model.playerSettingsController.isEnabled
+                  ? model.playerSettingsController.textSize
+                  : 0,
               hasBorder: true,
             ),
             videoChild: VlcPlayerWithControls(
-              controller: floatingViewController.videoPlayerController,
+              controller: model,
             ),
           );
         });

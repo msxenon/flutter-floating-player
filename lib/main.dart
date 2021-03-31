@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
-import 'package:flutter_player/floating_player/player_wrapper/ui/player.dart';
 import 'package:get/get.dart';
 import 'package:overlay_support/overlay_support.dart';
 
@@ -34,34 +33,6 @@ class MyApp extends StatelessWidget {
             home: MyHomePage(),
             popGesture: false,
           ),
-          // Directionality(
-          //   textDirection: TextDirection.rtl,
-          //   child: SizedBox(
-          //     width: 200,
-          //     height: 200,
-          //     child: Navigator(
-          //       key: playerOverFlowKey,
-          //       onGenerateRoute: (RouteSettings settings) {
-          //         if (settings.name == '/') {
-          //           return MaterialPageRoute(builder: (context) {
-          //             return Container(
-          //               width: 200,
-          //               color: Colors.red,
-          //               child: Text('Player ${settings.name} start'),
-          //             );
-          //           });
-          //         }
-          //         return MaterialPageRoute(builder: (context) {
-          //           return Container(
-          //             width: 200,
-          //             color: Colors.red,
-          //             child: Text('Player ${settings.name} }'),
-          //           );
-          //         });
-          //       },
-          //     ),
-          //   ),
-          // )
         ],
       ),
     );
@@ -117,24 +88,25 @@ class SecondPage extends StatefulWidget {
 
 void showPLayer(String id) {
   PLayerNav.showPlayer(
-      player: (context) => Player(
-          playerData: PlayerData<String>(
-              startPosition: Duration(seconds: 20 ?? 0),
-              onDispose: () {},
-              itemId: 11,
-              videoItem: 'movieX',
-              savePosition: (x) {
-                print('savePos callback $x');
-              })),
-      details: (_) => FlatButton(
-          onPressed: () {
-            showPLayer(id + 'kdk');
-          },
-          child: Text(
-            'Play nested',
-            style: TextStyle(color: Colors.white),
-          )),
-      overlayId: id);
+    bgColor: Colors.black,
+    playerData: PlayerData<String, String>(
+        itemTitle: 'test',
+        startPosition: Duration(seconds: 20 ?? 0),
+        onDispose: () {},
+        itemId: id,
+        videoItem: 'movieX',
+        savePosition: (x) {
+          print('savePos callback $x');
+        }),
+    details: (_) => FlatButton(
+        onPressed: () {
+          showPLayer(id + 'kdk');
+        },
+        child: Text(
+          'Play nested',
+          style: TextStyle(color: Colors.white),
+        )),
+  );
 }
 
 class _SecState extends State<SecondPage> {

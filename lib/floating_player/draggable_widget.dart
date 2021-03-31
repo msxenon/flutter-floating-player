@@ -147,7 +147,6 @@ class _DraggableWidgetState extends State<DraggableWidget>
   bool get currentVisibility => visible ?? widget.intialVisibility;
 
   double lastCaseYPos = 0;
-  TapDownDetails _downPointer;
   @override
   void dispose() {
     animationController?.dispose();
@@ -230,9 +229,9 @@ class _DraggableWidgetState extends State<DraggableWidget>
     var res = currentPosY / (boundary - widget.initialHeight);
     var percentage = max(0.4, 1.0 - res);
     print(
-        'getSize  ${Get.width} || ${MediaQuery.of(context).size.width}  $currentPosY (${top} - ${widget.statusBarHeight}) / (${boundary} - ${widget.initialHeight}) = $res => $percentage');
+        'getSize  ${Get.width} || ${MediaQuery.of(context).size.width}  $currentPosY ($top - ${widget.statusBarHeight}) / ($boundary - ${widget.initialHeight}) = $res => $percentage');
     print(
-        '(${currentPosY} / ${(boundary - widget.initialHeight)}) = $res => $percentage');
+        '($currentPosY / ${(boundary - widget.initialHeight)}) = $res => $percentage');
     return Stack(
       children: [
         Positioned(
@@ -263,7 +262,6 @@ class _DraggableWidgetState extends State<DraggableWidget>
                       }
                     },
                     onTapDown: (v) async {
-                      _downPointer = v;
                       await Future<void>.delayed(widget.touchDelay);
                     },
                     onVerticalDragEnd: (v) {
@@ -423,9 +421,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
         return AnchoringPosition.maximized;
       }
     }
-    if (_downPointer == null || !switchPos) {
-      return currentlyDocked;
-    }
+    return currentlyDocked;
   }
 
   void animateWidget(AnchoringPosition docker) {

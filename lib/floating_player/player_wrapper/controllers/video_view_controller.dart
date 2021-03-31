@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -154,7 +155,8 @@ class FloatingViewController extends GetxController {
     super.onInit();
   }
 
-  FloatingViewController({this.screenSize}) {
+  FloatingViewController(this.playerData,
+      {this.screenSize, @required this.customController}) {
     if (screenSize?.width == null) {
       screenSize = Size(MediaQuery.of(Get.context).size.width,
           MediaQuery.of(Get.context).size.height);
@@ -202,7 +204,8 @@ class FloatingViewController extends GetxController {
     }
   }
 
-  Future<void> createController(PlayerData playerData) async {
+  final PlayerData playerData;
+  Future<void> createController() async {
     _playerData = playerData;
     var videoRes = (playerData.videoRes == null || playerData.useMockData)
         ? {'BigBunny': MockData.mp4Bunny, 'Other': MockData.shortMovie}
@@ -217,16 +220,35 @@ class FloatingViewController extends GetxController {
   }
 
   Future<void> setNewVideo() async {
-    videoPlayerController = VlcPlayerController.network(
-        playerSettingsController.getVideo(),
-        hwAcc: HwAcc.FULL,
-        autoPlay: true,
-        options: VlcPlayerOptions(), onInit: () async {
-      if (_playerData?.startPosition != null) {
-        await Future.delayed(Duration(milliseconds: 1000));
-        videoPlayerController?.seekTo(_playerData.startPosition);
-      }
-    }, autoInitialize: true);
+    final filePath = playerSettingsController.getVideo();
+    bool isLocal = !filePath.startsWith('http');
+    debugPrint('setNewVideo $filePath => isLocal? $isLocal');
+    if (isLocal) {
+      videoPlayerController = VlcPlayerController.file(File(filePath),
+          hwAcc: HwAcc.FULL,
+          autoPlay: true,
+          options: VlcPlayerOptions(), onInit: () async {
+        if (_playerData?.startPosition != null) {
+          await Future.delayed(Duration(milliseconds: 1000));
+          if (videoPlayerController?.value?.isInitialized == true) {
+            videoPlayerController?.seekTo(_playerData.startPosition);
+          }
+        }
+      }, autoInitialize: true);
+    } else {
+      videoPlayerController = VlcPlayerController.network(filePath,
+          hwAcc: HwAcc.FULL,
+          autoPlay: true,
+          options: VlcPlayerOptions(), onInit: () async {
+        if (_playerData?.startPosition != null) {
+          await Future.delayed(Duration(milliseconds: 1000));
+          if (videoPlayerController?.value?.isInitialized == true) {
+            videoPlayerController?.seekTo(_playerData.startPosition);
+          }
+        }
+      }, autoInitialize: true);
+    }
+
     videoPlayerController.addListener(() async {
       await refreshWakelock();
     });
@@ -250,10 +272,15 @@ class FloatingViewController extends GetxController {
   }
 
   @override
-  void onClose() {
+  void onClose() async {
+    // isMaximized.close();
+    // dragging.close();
+    playerDispose();
     removeOverlay();
     normalScreenOptions();
     _stopSavePositionTimer();
+    // videoPlayerController.stopRendererScanning();
+    videoPlayerController.dispose();
     super.onClose();
   }
 
@@ -261,15 +288,15 @@ class FloatingViewController extends GetxController {
     anchoringPosition(AnchoringPosition.minimized);
   }
 
-  @override
-  void dispose() {
-    removeOverlay();
-    videoPlayerController?.stopRendererScanning();
-    videoPlayerController?.removeListener(() {});
-    controllerTimer?.cancel();
-    normalScreenOptions();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   removeOverlay();
+  //   videoPlayerController?.stopRendererScanning();
+  //   videoPlayerController?.removeListener(() {});
+  //   controllerTimer?.cancel();
+  //   normalScreenOptions();
+  //   super.dispose();
+  // }
 
   void onDraggingChange(bool dragging) {}
 
@@ -344,19 +371,26 @@ class FloatingViewController extends GetxController {
 
   void playerDispose() async {
     savePosition();
-    _playerData?.onDispose();
+    if (_playerData?.onDispose != null) {
+      _playerData?.onDispose();
+    }
   }
 
   void savePosition() {
     try {
-      final currentPos = videoPlayerController?.value?.position;
-      if (currentPos == null) {
+      final currentPos = videoPlayerController?.value?.position?.inSeconds;
+      final totalDuration = videoPlayerController?.value?.duration?.inSeconds;
+
+      if (currentPos == null || totalDuration == null) {
+        print('Position was null');
         return;
       }
       _playerData?.savePosition(SavePosition(
-          seconds: currentPos.inSeconds,
+          seconds: currentPos,
           videoItem: _playerData.videoItem,
+          totalSeconds: totalDuration,
           itemId: _playerData.itemId));
+      print('Position sent to save from player');
     } catch (e) {
       print(e);
     }

@@ -7,11 +7,12 @@ class PLayerDetails extends StatelessWidget {
   final WidgetBuilder child;
   final Color bgColor;
   PLayerDetails({
+    @required this.floatingViewController,
     Key key,
     this.child,
     this.bgColor,
   }) : super(key: key);
-  final FloatingViewController floatingViewController = Get.find();
+  final FloatingViewController floatingViewController;
   @override
   Widget build(BuildContext context) {
     return Container(
