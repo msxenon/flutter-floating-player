@@ -162,8 +162,11 @@ class _DraggableWidgetState extends State<DraggableWidget>
       vsync: this,
       duration: widget.animatedViewsDuration,
     )
-      ..addListener(() {
-        animateWidget(currentlyDocked);
+      ..addListener(() async {
+        await Future.delayed(Duration(microseconds: 200));
+        if (!animationController.isAnimating) {
+          animateWidget(currentlyDocked, 'AnimationController');
+        }
       })
       ..addStatusListener(
         (status) {
@@ -216,7 +219,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         setState(() {
           boundary = MediaQuery.of(context).size.height - widget.bottomMargin;
-          animateWidget(currentlyDocked);
+          animateWidget(currentlyDocked, 'didUpdateWidget');
         });
       });
     }
@@ -252,9 +255,11 @@ class _DraggableWidgetState extends State<DraggableWidget>
                       _floatingViewController.toggleControllers();
                     },
                     onDoubleTap: () {
-                      if (_floatingViewController.isFullScreen.value) {
+                      if (_floatingViewController.isFullScreen.value ||
+                          _floatingViewController.isUsingController.value) {
                         return;
                       }
+
                       if (currentlyDocked == AnchoringPosition.minimized) {
                         _animateTo(AnchoringPosition.maximized);
                       } else {
@@ -266,7 +271,8 @@ class _DraggableWidgetState extends State<DraggableWidget>
                     },
                     onVerticalDragEnd: (v) {
                       _floatingViewController.dragging(false);
-                      if (_floatingViewController.isFullScreen.value) {
+                      if (_floatingViewController.isFullScreen.value ||
+                          _floatingViewController.isUsingController.value) {
                         return;
                       }
 
@@ -278,8 +284,8 @@ class _DraggableWidgetState extends State<DraggableWidget>
                               (top - lastCaseYPos).abs() >
                                   MediaQuery.of(context).size.height / 5;
 
-                      _floatingViewController
-                          .anchoringPosition(determineDocker(p, switchPos));
+                      _floatingViewController.changeAnchor(
+                          determineDocker(p, switchPos), 'onVerticalDragEnd');
                       // debugPrint(
                       //     'onVerticalDragEnd $switchPos / Velocity:${v.primaryVelocity} = ${v.velocity.pixelsPerSecond.dy} : dir:${v.velocity.pixelsPerSecond.distanceSquared} / anchorPos: ${_floatingViewController.anchoringPosition.value}');
                       if (animationController.isAnimating) {
@@ -289,7 +295,8 @@ class _DraggableWidgetState extends State<DraggableWidget>
                       animationController.forward();
                     },
                     onVerticalDragUpdate: (v) async {
-                      if (_floatingViewController.isFullScreen.value) {
+                      if (_floatingViewController.isFullScreen.value ||
+                          _floatingViewController.isUsingController.value) {
                         return;
                       }
                       _floatingViewController.dragging(true);
@@ -311,7 +318,8 @@ class _DraggableWidgetState extends State<DraggableWidget>
                       });
                     },
                     onHorizontalDragUpdate: (f) {
-                      if (!_floatingViewController.canClose.value) {
+                      if (!_floatingViewController.canClose.value ||
+                          _floatingViewController.isUsingController.value) {
                         return;
                       }
                       _floatingViewController.dragging(true);
@@ -328,6 +336,9 @@ class _DraggableWidgetState extends State<DraggableWidget>
                       }
                     },
                     onHorizontalDragEnd: (f) {
+                      if (_floatingViewController.isUsingController.value) {
+                        return;
+                      }
                       if (closePercentage == 1) {
                         widget.onRemove();
                       }
@@ -414,6 +425,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
   }
 
   AnchoringPosition determineDocker(Offset upPos, bool switchPos) {
+    debugPrint('determineDocker start $switchPos && $currentlyDocked');
     if (switchPos) {
       if (currentlyDocked == AnchoringPosition.maximized) {
         return AnchoringPosition.minimized;
@@ -424,31 +436,40 @@ class _DraggableWidgetState extends State<DraggableWidget>
     return currentlyDocked;
   }
 
-  void animateWidget(AnchoringPosition docker) {
+  void animateWidget(AnchoringPosition docker, String tag) {
     final double totalHeight = boundary;
     final double totalWidth = getPlayerWidth();
     if (_floatingViewController.isFullScreen.value) {
       return;
     }
+    debugPrint(
+        'animateWidget start $docker &  currently => $currentlyDocked  $tag');
+
     switch (docker) {
       case AnchoringPosition.minimized:
         double remaingDistanceX = (totalWidth - widgetWidth - hardLeft);
         double remaingDistanceY = (totalHeight - widgetHeight - hardTop);
+        final noNeedToChange = remaingDistanceY < 5;
+        debugPrint(
+            'animateWidget 1st $remaingDistanceX &  currently => $remaingDistanceY $noNeedToChange $tag');
+        // if (noNeedToChange) {
+        //   return;
+        // }
         setState(() {
           left = hardLeft + (animation.value) * remaingDistanceX;
           top = hardTop +
               (animation.value) * remaingDistanceY +
               (animation.value);
-          _floatingViewController
-              .anchoringPosition(AnchoringPosition.minimized);
+          _floatingViewController.changeAnchor(
+              AnchoringPosition.minimized, 'animateWidget 1st');
         });
         break;
       case AnchoringPosition.maximized:
         setState(() {
           left = 0;
           top = topMargin;
-          _floatingViewController
-              .anchoringPosition(AnchoringPosition.maximized);
+          _floatingViewController.changeAnchor(
+              AnchoringPosition.maximized, 'animateWidget 2nd');
         });
         break;
       default:
@@ -469,14 +490,18 @@ class _DraggableWidgetState extends State<DraggableWidget>
   }
 
   void _animateTo(AnchoringPosition anchoringPosition) {
+    debugPrint('_animateTo start old $currentlyDocked => $anchoringPosition');
+
     if (animationController.isAnimating) {
       animationController.stop();
     }
     closePercentage = 0;
     animationController.reset();
+    _floatingViewController.changeAnchor(anchoringPosition, 'animateTo');
     _floatingViewController.dragging(false);
-    _floatingViewController.anchoringPosition(anchoringPosition);
+
     animationController.forward();
+    debugPrint('_animateTo end $currentlyDocked');
   }
 
   Offset _getCurrentPosition() {

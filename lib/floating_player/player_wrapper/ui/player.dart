@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:get/get.dart';
-import 'package:subtitle_wrapper_package/data/models/style/subtitle_style.dart';
-import 'package:subtitle_wrapper_package/subtitle_wrapper_package.dart';
 
 class Player extends StatefulWidget {
   Player({Key key, @required this.floatingViewController, @required this.tag})
@@ -42,20 +40,8 @@ class _PlayerState extends State<Player> {
               !showPLayer) {
             return Center(child: CircularProgressIndicator());
           }
-          return SubTitleWrapper(
-            videoPlayerController: model.playerSettingsController,
-            subtitleController:
-                model.playerSettingsController.subtitleController,
-            subtitleStyle: SubtitleStyle(
-              textColor: Colors.white,
-              fontSize: model.playerSettingsController.isEnabled
-                  ? model.playerSettingsController.textSize
-                  : 0,
-              hasBorder: true,
-            ),
-            videoChild: VlcPlayerWithControls(
-              controller: model,
-            ),
+          return VlcPlayerWithControls(
+            controller: model,
           );
         });
   }

@@ -7,9 +7,8 @@ import 'package:get/get.dart';
 class ControlsOverlay extends StatelessWidget {
   ControlsOverlay(
       {Key key,
-      this.controller,
-      this.position,
-      this.duration,
+      this.position = '',
+      this.duration = '',
       this.sliderValue,
       this.sliderUpdate})
       : super(key: key);
@@ -17,7 +16,7 @@ class ControlsOverlay extends StatelessWidget {
   final String duration;
   final double sliderValue;
   final Function(double) sliderUpdate;
-  final FloatingViewController controller;
+  final FloatingViewController controller = Get.find<FloatingViewController>();
 
   @override
   Widget build(BuildContext context) {

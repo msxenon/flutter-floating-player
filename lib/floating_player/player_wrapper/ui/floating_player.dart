@@ -6,7 +6,6 @@ import 'package:flutter_player/floating_player/player_wrapper/ui/player.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:get/get.dart';
 
-import 'controls_overlay.dart';
 import 'details/player_details.dart';
 
 class FloatingWrapper extends StatefulWidget {
@@ -56,7 +55,7 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
   Widget build(BuildContext context) {
     return GetBuilder<FloatingViewController>(
         init: FloatingViewController(widget.playerData,
-            customController: widget.customControllers ?? ControlsOverlay()),
+            customController: widget.customControllers),
         autoRemove: true,
         tag: widget.playerData.itemId,
         builder: (model) {

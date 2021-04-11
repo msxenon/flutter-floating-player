@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
+import 'package:flutter_player/subtitle/data/models/style/subtitle_style.dart';
+import 'package:flutter_player/subtitle/subtitle_wrapper_package.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
 
@@ -102,6 +104,17 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
                   placeholder: Center(child: CircularProgressIndicator()),
                 ),
               ),
+              SubTitleWrapper(
+                controller: widget.controller,
+                subtitleController: widget
+                    .controller.playerSettingsController.subtitleController,
+                subtitleStyle: SubtitleStyle(
+                  textColor: Colors.white,
+                  fontSize: Theme.of(context).textTheme.subtitle1.fontSize *
+                      widget.controller.playerSettingsController.textSize,
+                  hasBorder: true,
+                ),
+              ),
               widget.controller.customController != null
                   ? widget.controller.customController(
                       controller: widget.controller.videoPlayerController,
@@ -114,7 +127,6 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
                         });
                       })
                   : ControlsOverlay(
-                      controller: widget.controller,
                       position: position,
                       duration: duration,
                       sliderValue: sliderValue,

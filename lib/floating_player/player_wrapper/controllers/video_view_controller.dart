@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
+import 'package:flutter_player/subtitle/subtitle_controller.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
-import 'package:subtitle_wrapper_package/subtitle_controller.dart';
 import 'package:wakelock/wakelock.dart';
 
 import '../../draggable_widget.dart';
@@ -23,23 +23,23 @@ class PlayerSettingsController extends GetxController {
   Map<String, String> videoResolutions = {};
   String selectedRes;
   TextSizes textEnum = TextSizes.medium;
-  static const double _defaultTextSize = 20;
+  static const double _defaultTextSize = 10;
   double textSize = _defaultTextSize;
   Function(Duration, dynamic videoItem, String itemId) onDisposeListener;
   double _getTextSize() {
     double result = _defaultTextSize;
     switch (textEnum) {
       case TextSizes.normal:
-        result = result * 1;
+        result = 1;
         break;
       case TextSizes.medium:
-        result = (result * 1.5);
+        result = 1.3;
         break;
       case TextSizes.large:
-        result = (result * 2);
+        result = 1.5;
         break;
       case TextSizes.xlarge:
-        result = (result * 3);
+        result = 2;
         break;
     }
     return result;
@@ -95,9 +95,20 @@ class PlayerSettingsController extends GetxController {
     if (subtitleController == null) {
       isEnabled = link?.isNotEmpty == true;
     }
+    bool isLocal = isEnabled ? !subtitleLink.startsWith('http') : false;
+
+    debugPrint('setSubtitle $subtitleLink => isLocal? $isLocal $subtitleType');
+    String subtitleContent;
+    if (isLocal) {
+      final File file = File(subtitleLink);
+      subtitleContent = await file.readAsString();
+      subtitleLink = null;
+    }
     subtitleController = SubtitleController(
         subtitleUrl: subtitleLink,
         subtitleType: subtitleType,
+        subtitlesContent: subtitleContent,
+        subtitleDecoder: SubtitleDecoder.utf8,
         showSubtitles: isEnabled);
     return;
   }
@@ -132,19 +143,19 @@ class FloatingViewController extends GetxController {
   double initialHeight;
   Timer controllerTimer;
   Timer savePositionTimer;
-  var anchoringPosition = AnchoringPosition.maximized.obs;
-  var isFullScreen = false.obs;
-  var isMaximized = true.obs;
-  var dragging = false.obs;
-  var controllersCanBeVisible = true.obs;
-  var canMinimize = true.obs;
-  var canClose = true.obs;
-  var isUsingController = false.obs;
+  final anchoringPosition = AnchoringPosition.maximized.obs;
+  final isFullScreen = false.obs;
+  final isMaximized = true.obs;
+  final dragging = false.obs;
+  final controllersCanBeVisible = true.obs;
+  final canMinimize = true.obs;
+  final canClose = true.obs;
+  final isUsingController = false.obs;
   OverlayEntry _overlayEntry;
-  Color floatingBottomSheetBgColor = Colors.white;
-  Color floatingBottomSheetTextColor = Colors.black87;
-  Color floatingBottomSheetDivColor = Colors.black.withOpacity(0.3);
-  OverlayControllerData customController;
+  final Color floatingBottomSheetBgColor = Colors.white;
+  final Color floatingBottomSheetTextColor = Colors.black87;
+  final Color floatingBottomSheetDivColor = Colors.black.withOpacity(0.3);
+  final OverlayControllerData customController;
   WidgetBuilder customControllers;
   PlayerData _playerData;
 
@@ -190,6 +201,11 @@ class FloatingViewController extends GetxController {
         _startToggleOffTimer();
       }
     });
+  }
+  void changeAnchor(AnchoringPosition _anchoringPosition, String tag) {
+    debugPrint(
+        'changeAnchor old ${anchoringPosition.value} => $_anchoringPosition $tag');
+    anchoringPosition.value = _anchoringPosition;
   }
 
   void toggleControllers() {
@@ -285,7 +301,7 @@ class FloatingViewController extends GetxController {
   }
 
   void minimize() {
-    anchoringPosition(AnchoringPosition.minimized);
+    changeAnchor(AnchoringPosition.minimized, 'minimize');
   }
 
   // @override
@@ -313,7 +329,7 @@ class FloatingViewController extends GetxController {
 
   void toggleFullScreen() {
     if (!isFullScreen.value) {
-      anchoringPosition(AnchoringPosition.fullScreen);
+      changeAnchor(AnchoringPosition.fullScreen, 'toggleFullScreen');
 
       ///is going full screen
       SystemChrome.setEnabledSystemUIOverlays([]);
@@ -324,7 +340,7 @@ class FloatingViewController extends GetxController {
         DeviceOrientation.portraitDown,
       ]);
     } else {
-      anchoringPosition(AnchoringPosition.maximized);
+      changeAnchor(AnchoringPosition.maximized, 'toggleFullScreen');
       normalScreenOptions();
     }
     update();
