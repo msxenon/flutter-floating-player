@@ -22,12 +22,12 @@ class SubTitleWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        subtitleController.showSubtitles
-            ? IgnorePointer(
-                ignoring: true,
-                child: Positioned(
+    return Padding(
+      padding: EdgeInsets.all(10),
+      child: Stack(
+        children: <Widget>[
+          subtitleController.showSubtitles
+              ? Positioned(
                   top: subtitleStyle.position.top,
                   bottom: subtitleStyle.position.bottom,
                   left: subtitleStyle.position.left,
@@ -44,18 +44,14 @@ class SubTitleWrapper extends StatelessWidget {
                           subtitleController: subtitleController,
                         ),
                       ),
-                    child: AnimatedOpacity(
-                      duration: const Duration(microseconds: 250),
-                      opacity: controller.isUsingController.isTrue ? 0 : 1,
-                      child: SubtitleTextView(
-                        subtitleStyle: subtitleStyle,
-                      ),
+                    child: SubtitleTextView(
+                      subtitleStyle: subtitleStyle,
                     ),
                   ),
-                ),
-              )
-            : SizedBox.shrink()
-      ],
+                )
+              : SizedBox.shrink()
+        ],
+      ),
     );
   }
 }
