@@ -5,7 +5,6 @@ import 'package:flutter_player/floating_player/player_wrapper/controllers/video_
 import 'package:flutter_player/subtitle/data/models/style/subtitle_position.dart';
 import 'package:flutter_player/subtitle/data/models/style/subtitle_style.dart';
 import 'package:flutter_player/subtitle/subtitle_wrapper_package.dart';
-import 'package:native_device_orientation/native_device_orientation.dart';
 import 'package:video_player/video_player.dart';
 
 import 'advanced_overlay_widget.dart';
@@ -23,30 +22,6 @@ class VideoPlayerBothWidget extends StatefulWidget {
 }
 
 class _VideoPlayerBothWidgetState extends State<VideoPlayerBothWidget> {
-  Orientation target;
-
-  @override
-  void initState() {
-    super.initState();
-
-    NativeDeviceOrientationCommunicator()
-        .onOrientationChanged(useSensor: true)
-        .listen((event) {
-      debugPrint('NativeDeviceOrientationCommunicator XXXX $event');
-      //
-      // final isPortrait = event == NativeDeviceOrientation.portraitUp;
-      // final isLandscape = event == NativeDeviceOrientation.landscapeLeft ||
-      //     event == NativeDeviceOrientation.landscapeRight;
-      // final isTargetPortrait = target == Orientation.portrait;
-      // final isTargetLandscape = target == Orientation.landscape;
-      //
-      // if (isPortrait && isTargetPortrait || isLandscape && isTargetLandscape) {
-      //   target = null;
-      //   SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-      // }
-    });
-  }
-
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
@@ -63,9 +38,6 @@ class _VideoPlayerBothWidgetState extends State<VideoPlayerBothWidget> {
   Widget buildVideo() => OrientationBuilder(
         builder: (context, orientation) {
           final isPortrait = orientation == Orientation.portrait;
-          debugPrint('setOrientation $orientation XXXX === $target');
-
-          target = orientation;
           return Stack(
             fit: isPortrait ? StackFit.loose : StackFit.expand,
             children: <Widget>[

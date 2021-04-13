@@ -163,7 +163,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
       duration: widget.animatedViewsDuration,
     )
       ..addListener(() async {
-        await Future.delayed(Duration(microseconds: 200));
+        // await Future.delayed(Duration(microseconds: 200));
         if (!animationController.isAnimating) {
           animateWidget(currentlyDocked, 'AnimationController');
         }
@@ -270,23 +270,25 @@ class _DraggableWidgetState extends State<DraggableWidget>
                         return;
                       }
 
-                      final p = Offset(left, top);
+                      // final p = Offset(left, top);
                       // debugPrint(
                       //     'onVerticalDragEnd  anchorPos: ${currentlyDocked} ==== ${top} - ${lastCaseYPos} = ${top - lastCaseYPos} > ${Get.height / 5}');
                       bool switchPos =
                           v.velocity.pixelsPerSecond.dy.abs() > 3000.0 ||
                               (top - lastCaseYPos).abs() >
                                   MediaQuery.of(context).size.height / 5;
-
-                      _floatingViewController.changeAnchor(
-                          determineDocker(p, switchPos), 'onVerticalDragEnd');
+                      if (switchPos) {
+                        _floatingViewController.changeAnchor(
+                            determineDocker(switchPos), 'onVerticalDragEnd');
+                      } else {
+                        if (animationController.isAnimating) {
+                          animationController.stop();
+                        }
+                        animationController.reset();
+                        animationController.forward();
+                      }
                       // debugPrint(
                       //     'onVerticalDragEnd $switchPos / Velocity:${v.primaryVelocity} = ${v.velocity.pixelsPerSecond.dy} : dir:${v.velocity.pixelsPerSecond.distanceSquared} / anchorPos: ${_floatingViewController.anchoringPosition.value}');
-                      if (animationController.isAnimating) {
-                        animationController.stop();
-                      }
-                      animationController.reset();
-                      animationController.forward();
                     },
                     onVerticalDragUpdate: (v) async {
                       if (_floatingViewController.isFullScreen.value ||
@@ -426,8 +428,9 @@ class _DraggableWidgetState extends State<DraggableWidget>
     }
   }
 
-  AnchoringPosition determineDocker(Offset upPos, bool switchPos) {
-    debugPrint('determineDocker start $switchPos && $currentlyDocked');
+  AnchoringPosition determineDocker(bool switchPos) {
+    debugPrint(
+        'determineDocker switchPos $switchPos &&  oldAnchor $currentlyDocked');
     if (switchPos) {
       if (currentlyDocked == AnchoringPosition.maximized) {
         return AnchoringPosition.minimized;
