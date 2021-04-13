@@ -45,9 +45,11 @@ class SubTitleWrapper extends StatelessWidget {
                         subtitleController: subtitleController,
                       ),
                     ),
-                  child: SubtitleTextView(
-                    subtitleStyle: subtitleStyle,
-                  ),
+                  child: controller.playerSettingsController.isEnabled
+                      ? SubtitleTextView(
+                          subtitleStyle: subtitleStyle,
+                        )
+                      : SizedBox.shrink(),
                 ),
               )
             : SizedBox.shrink()

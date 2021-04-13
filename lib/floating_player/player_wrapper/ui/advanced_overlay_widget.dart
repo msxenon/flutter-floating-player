@@ -109,7 +109,7 @@ class AdvancedOverlayWidget extends StatelessWidget {
         height: 16,
         child: VideoProgressIndicator(
           controller.videoPlayerController,
-          allowScrubbing: true,
+          allowScrubbing: !controller.isLive(),
         ),
       );
 
@@ -126,22 +126,23 @@ class AdvancedOverlayWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        IconButton(
-          color: canRewind ? Colors.white : Colors.white24,
-          icon: Icon(
-            Icons.replay_10,
-            size: iconSize,
-          ),
-          onPressed: canRewind
-              ? () {
-                  controller.resetControllerTimer();
+        if (!controller.isLive())
+          IconButton(
+            icon: Icon(
+              Icons.replay_10,
+              color: canRewind ? Colors.white : Colors.white54,
+              size: iconSize,
+            ),
+            onPressed: canRewind
+                ? () {
+                    controller.resetControllerTimer();
 
-                  controller.videoPlayerController.seekTo(
-                      controller.videoPlayerController.value.position -
-                          Duration(seconds: autoSeekSeconds));
-                }
-              : null,
-        ),
+                    controller.videoPlayerController.seekTo(
+                        controller.videoPlayerController.value.position -
+                            Duration(seconds: autoSeekSeconds));
+                  }
+                : null,
+          ),
         controller.videoPlayerController.value.isPlaying
             ? IconButton(
                 onPressed: () {
@@ -162,22 +163,23 @@ class AdvancedOverlayWidget extends StatelessWidget {
                   size: iconSize,
                 ),
               ),
-        IconButton(
-          icon: Icon(
-            Icons.forward_10,
-            color: canForward ? Colors.white : Colors.white24,
-            size: iconSize,
-          ),
-          onPressed: canForward
-              ? () {
-                  controller.resetControllerTimer();
+        if (!controller.isLive())
+          IconButton(
+            icon: Icon(
+              Icons.forward_10,
+              color: canForward ? Colors.white : Colors.white54,
+              size: iconSize,
+            ),
+            onPressed: canForward
+                ? () {
+                    controller.resetControllerTimer();
 
-                  controller.videoPlayerController.seekTo(
-                      controller.videoPlayerController.value.position +
-                          Duration(seconds: autoSeekSeconds));
-                }
-              : null,
-        ),
+                    controller.videoPlayerController.seekTo(
+                        controller.videoPlayerController.value.position +
+                            Duration(seconds: autoSeekSeconds));
+                  }
+                : null,
+          ),
       ],
     );
   }
