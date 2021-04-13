@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
+import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 
 class AdvancedOverlayWidget extends StatelessWidget {
-  final VideoPlayerController controller;
+  final FloatingViewController controller;
   final VoidCallback onClickedFullScreen;
-
-  static const allSpeeds = <double>[0.25, 0.5, 1, 1.5, 2, 3, 5, 10];
 
   const AdvancedOverlayWidget({
     Key key,
     @required this.controller,
     this.onClickedFullScreen,
   }) : super(key: key);
-
+  static const autoSeekSeconds = 10;
   String getPosition() {
     final duration = Duration(
-        milliseconds: controller.value.position.inMilliseconds.round());
+        milliseconds: controller
+            .videoPlayerController.value.position.inMilliseconds
+            .round());
 
     return [duration.inMinutes, duration.inSeconds]
         .map((seg) => seg.remainder(60).toString().padLeft(2, '0'))
@@ -24,80 +27,158 @@ class AdvancedOverlayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () =>
-            controller.value.isPlaying ? controller.pause() : controller.play(),
-        child: Stack(
-          children: <Widget>[
-            buildPlay(),
-            buildSpeed(),
-            Positioned(
-              left: 8,
-              bottom: 28,
-              child: Text(getPosition()),
-            ),
-            Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Row(
-                  children: [
-                    Expanded(child: buildIndicator()),
-                    const SizedBox(width: 12),
-                    GestureDetector(
-                      child: Icon(
-                        Icons.fullscreen,
-                        color: Colors.white,
-                        size: 28,
+        behavior: HitTestBehavior.translucent,
+        onTap: () => controller.toggleControllers(),
+        child: Obx(() {
+          final double iconSize = controller.isFullScreen.value ? 40 : 24;
+
+          return AnimatedOpacity(
+            duration: const Duration(milliseconds: 250),
+            opacity: controller.controlsIsShowing.value ? 1 : 0,
+            child: IgnorePointer(
+              ignoring: !controller.controlsIsShowing.value,
+              child: Container(
+                padding: controller.isFullScreen.value
+                    ? const EdgeInsets.symmetric(horizontal: 20, vertical: 10)
+                    : EdgeInsets.zero,
+                color: Colors.black54,
+                child: Stack(
+                  children: <Widget>[
+                    Center(child: buildPlay(iconSize)),
+                    Positioned(
+                      left: 8,
+                      bottom: 28,
+                      child: Text(
+                        getPosition(),
+                        style: TextStyle(color: Colors.white),
                       ),
-                      onTap: onClickedFullScreen,
                     ),
-                    const SizedBox(width: 8),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        children: [
+                          Expanded(child: buildIndicator()),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            child: Icon(
+                              Icons.fullscreen,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            onTap: () {
+                              controller.resetControllerTimer();
+                              onClickedFullScreen();
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                      ),
+                    ),
+                    Align(
+                      alignment: AlignmentDirectional.topEnd,
+                      child: IconButton(
+                        onPressed: () =>
+                            showFloatingBottomSheet(context, controller, null),
+                        color: Colors.white,
+                        iconSize: iconSize,
+                        icon: Icon(Icons.menu),
+                      ),
+                    ),
+                    if (controller.canMinimize.value)
+                      Align(
+                        alignment: AlignmentDirectional.topStart,
+                        child: IconButton(
+                          onPressed: controller.minimize,
+                          color: Colors.white,
+                          iconSize: iconSize,
+                          icon: Icon(Icons.keyboard_arrow_down),
+                        ),
+                      )
                   ],
-                )),
-          ],
-        ),
+                ),
+              ),
+            ),
+          );
+        }),
       );
 
   Widget buildIndicator() => Container(
         margin: EdgeInsets.all(8).copyWith(right: 0),
         height: 16,
         child: VideoProgressIndicator(
-          controller,
+          controller.videoPlayerController,
           allowScrubbing: true,
         ),
       );
 
-  Widget buildSpeed() => Align(
-        alignment: Alignment.topRight,
-        child: PopupMenuButton<double>(
-          initialValue: controller.value.playbackSpeed,
-          tooltip: 'Playback speed',
-          onSelected: controller.setPlaybackSpeed,
-          itemBuilder: (context) => allSpeeds
-              .map<PopupMenuEntry<double>>((speed) => PopupMenuItem(
-                    value: speed,
-                    child: Text('${speed}x'),
-                  ))
-              .toList(),
-          child: Container(
-            color: Colors.white38,
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            child: Text('${controller.value.playbackSpeed}x'),
+  Widget buildPlay(double iconSize) {
+    final canForward = (controller.videoPlayerController.value.duration -
+                controller.videoPlayerController.value.position)
+            .inSeconds >
+        autoSeekSeconds;
+    final canRewind =
+        controller.videoPlayerController.value.position.inSeconds >
+            autoSeekSeconds;
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        IconButton(
+          color: canRewind ? Colors.white : Colors.white24,
+          icon: Icon(
+            Icons.replay_10,
+            size: iconSize,
           ),
-        ),
-      );
+          onPressed: canRewind
+              ? () {
+                  controller.resetControllerTimer();
 
-  Widget buildPlay() => controller.value.isPlaying
-      ? Container()
-      : Container(
-          color: Colors.black26,
-          child: Center(
-            child: Icon(
-              Icons.play_arrow,
-              color: Colors.white,
-              size: 70,
-            ),
+                  controller.videoPlayerController.seekTo(
+                      controller.videoPlayerController.value.position -
+                          Duration(seconds: autoSeekSeconds));
+                }
+              : null,
+        ),
+        controller.videoPlayerController.value.isPlaying
+            ? IconButton(
+                onPressed: () {
+                  controller.resetControllerTimer();
+                  controller.videoPlayerController.pause();
+                },
+                icon: Icon(
+                  Icons.pause,
+                  color: Colors.white,
+                  size: iconSize,
+                ),
+              )
+            : IconButton(
+                onPressed: () => controller.videoPlayerController.play(),
+                icon: Icon(
+                  Icons.play_arrow,
+                  color: Colors.white,
+                  size: iconSize,
+                ),
+              ),
+        IconButton(
+          icon: Icon(
+            Icons.forward_10,
+            color: canForward ? Colors.white : Colors.white24,
+            size: iconSize,
           ),
-        );
+          onPressed: canForward
+              ? () {
+                  controller.resetControllerTimer();
+
+                  controller.videoPlayerController.seekTo(
+                      controller.videoPlayerController.value.position +
+                          Duration(seconds: autoSeekSeconds));
+                }
+              : null,
+        ),
+      ],
+    );
+  }
 }

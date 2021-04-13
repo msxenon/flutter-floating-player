@@ -4,12 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/video_player_both.dart';
-import 'package:flutter_player/subtitle/data/models/style/subtitle_style.dart';
-import 'package:flutter_player/subtitle/subtitle_wrapper_package.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
-
-import 'controls_overlay.dart';
 
 typedef OverlayControllerData = Widget Function(
     {@required String position,
@@ -99,24 +95,7 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
             alignment: Alignment.bottomCenter,
             children: <Widget>[
               Center(
-                child: VideoPlayerBothWidget(
-                    controller: widget.controller.videoPlayerController),
-                // child: VlcPlayer(
-                //   controller: widget.controller.videoPlayerController,
-                //   aspectRatio: 16 / 9,
-                //   placeholder: Center(child: CircularProgressIndicator()),
-                // ),
-              ),
-              SubTitleWrapper(
-                controller: widget.controller,
-                subtitleController: widget
-                    .controller.playerSettingsController.subtitleController,
-                subtitleStyle: SubtitleStyle(
-                  textColor: Colors.white,
-                  fontSize: Theme.of(context).textTheme.subtitle1.fontSize *
-                      widget.controller.playerSettingsController.textSize,
-                  hasBorder: true,
-                ),
+                child: VideoPlayerBothWidget(controller: widget.controller),
               ),
               widget.controller.customController != null
                   ? widget.controller.customController(
@@ -129,16 +108,7 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
                           setSliderValue(progress.floor().toDouble());
                         });
                       })
-                  : ControlsOverlay(
-                      position: position,
-                      duration: duration,
-                      sliderValue: sliderValue,
-                      sliderUpdate: (progress) {
-                        setState(() {
-                          setSliderValue(progress.floor().toDouble());
-                        });
-                      },
-                    ),
+                  : SizedBox(),
             ],
           ),
         ),

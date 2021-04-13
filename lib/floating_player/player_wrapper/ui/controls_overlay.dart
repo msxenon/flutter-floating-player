@@ -258,7 +258,6 @@ class ControlsOverlay extends StatelessWidget {
                   IconButton(
                     icon: Icon(Icons.fullscreen),
                     color: Colors.white,
-                    onPressed: () => controller.toggleFullScreen(),
                   ),
                 ],
               ),

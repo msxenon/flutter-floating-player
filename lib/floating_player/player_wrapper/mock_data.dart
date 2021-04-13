@@ -12,8 +12,7 @@ class MockData {
       "https://gist.githubusercontent.com/msxenon/76248c49d2d5608cc6c47a039d4b92ec/raw/11e72149e1b972c83ca37d5ccf1bb6cf3c87433e/WEBVTT.webvtt";
   static const String testVtt =
       "https://gist.githubusercontent.com/msxenon/562f71c9b619ecb231ad1071cbfd211f/raw/7c8af5b08551fb5a797c04cd4ee41894dbb60ee7/test.vtt";
-  //todo
   static const String srt =
-      'http://cinema.shoofnetwork.net/ad3021d7-2330-4fa0-9f53-58143476a8d6/GE4wU5icIvxhRnG/GE4wU5icIvxhRnG.srt'; //"https://raw.githubusercontent.com/andreyvit/subtitle-tools/master/sample.srt";
+      "https://raw.githubusercontent.com/andreyvit/subtitle-tools/master/sample.srt";
   static const String defaultSubtitle = srt;
 }

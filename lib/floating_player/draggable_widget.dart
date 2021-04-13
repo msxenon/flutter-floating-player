@@ -319,11 +319,19 @@ class _DraggableWidgetState extends State<DraggableWidget>
                       _floatingViewController.dragging(true);
                       left = left + f.primaryDelta;
                       if (left <= hardLeft) {
-                        closePercentage = hardLeft > 0
-                            ? 1 - (left / hardLeft).abs()
-                            : left.abs() > 200
-                                ? 1
-                                : 0;
+                        if (currentlyDocked == AnchoringPosition.minimized) {
+                          closePercentage = hardLeft > 0
+                              ? 1 - (left / hardLeft).abs()
+                              : left.abs() > 200
+                                  ? 1
+                                  : 0;
+                        } else {
+                          closePercentage = hardLeft > 0
+                              ? 1 - (left / hardLeft).abs()
+                              : left.abs() > 50
+                                  ? 1
+                                  : 0;
+                        }
                         setState(() {});
                       } else {
                         left = hardLeft;

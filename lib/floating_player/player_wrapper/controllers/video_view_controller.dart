@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:auto_orientation/auto_orientation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
@@ -25,9 +26,8 @@ class PlayerSettingsController extends GetxController {
   String selectedRes;
   TextSizes textEnum = TextSizes.normal;
   static const double _defaultTextSize = 1;
-  double textSize = _defaultTextSize;
   Function(Duration, dynamic videoItem, String itemId) onDisposeListener;
-  double _getTextSize() {
+  double getTextSize(bool isFullScreen) {
     double result = _defaultTextSize;
     switch (textEnum) {
       case TextSizes.normal:
@@ -37,10 +37,10 @@ class PlayerSettingsController extends GetxController {
         result = 1.5;
         break;
       case TextSizes.large:
-        result = 3;
+        result = isFullScreen ? 3 : 1.6;
         break;
       case TextSizes.xlarge:
-        result = 4;
+        result = isFullScreen ? 4 : 1.8;
         break;
     }
     return result;
@@ -48,7 +48,6 @@ class PlayerSettingsController extends GetxController {
 
   void setTextSize(TextSizes _textSize) {
     textEnum = _textSize;
-    textSize = _getTextSize();
     update();
   }
 
@@ -219,6 +218,7 @@ class FloatingViewController extends GetxController {
   void changeAnchor(AnchoringPosition _anchoringPosition, String tag) {
     debugPrint(
         'changeAnchor old ${anchoringPosition.value} => $_anchoringPosition $tag');
+    controlsIsShowing(false);
     anchoringPosition.value = _anchoringPosition;
   }
 
@@ -227,6 +227,7 @@ class FloatingViewController extends GetxController {
       return;
     }
     controlsIsShowing(!controlsIsShowing.value);
+    debugPrint('toggleControllers to ${controlsIsShowing.value}');
     if (controlsIsShowing.value) {
       _startToggleOffTimer();
     } else {
@@ -259,35 +260,14 @@ class FloatingViewController extends GetxController {
     final filePath = playerSettingsController.getVideo();
     bool isLocal = !filePath.startsWith('http');
     debugPrint('setNewVideo $filePath => isLocal? $isLocal');
-    //todo
     if (isLocal) {
-      // videoPlayerController = VlcPlayerController.file(File(filePath),
-      //     hwAcc: HwAcc.FULL,
-      //     autoPlay: true,
-      //     options: VlcPlayerOptions(), onInit: () async {
-      //   if (_playerData?.startPosition != null) {
-      //     await Future.delayed(Duration(milliseconds: 1000));
-      //     if (videoPlayerController?.value?.isInitialized == true) {
-      //       videoPlayerController?.seekTo(_playerData.startPosition);
-      //     }
-      //   }
-      // }, autoInitialize: true);
-    } else {
-      videoPlayerController = VideoPlayerController.network(filePath)
-        // ..addListener(() => setState(() {}))
+      videoPlayerController = VideoPlayerController.file(File(filePath))
         ..setLooping(true)
         ..initialize().then((_) => videoPlayerController.play());
-      // videoPlayerController = VlcPlayerController.network(filePath,
-      //     hwAcc: HwAcc.DECODING,
-      //     autoPlay: true,
-      //     options: VlcPlayerOptions(), onInit: () async {
-      //   if (_playerData?.startPosition != null) {
-      //     await Future.delayed(Duration(milliseconds: 1000));
-      //     if (videoPlayerController?.value?.isInitialized == true) {
-      //       videoPlayerController?.seekTo(_playerData.startPosition);
-      //     }
-      //   }
-      // }, autoInitialize: true);
+    } else {
+      videoPlayerController = VideoPlayerController.network(filePath)
+        ..setLooping(true)
+        ..initialize().then((_) => videoPlayerController.play());
     }
 
     videoPlayerController.addListener(() async {
@@ -316,7 +296,6 @@ class FloatingViewController extends GetxController {
   void onClose() async {
     playerDispose();
     removeOverlay();
-    normalScreenOptions();
     _stopSavePositionTimer();
     // videoPlayerController.stopRendererScanning();
     videoPlayerController?.dispose();
@@ -326,16 +305,6 @@ class FloatingViewController extends GetxController {
   void minimize() {
     changeAnchor(AnchoringPosition.minimized, 'minimize');
   }
-
-  // @override
-  // void dispose() {
-  //   removeOverlay();
-  //   videoPlayerController?.stopRendererScanning();
-  //   videoPlayerController?.removeListener(() {});
-  //   controllerTimer?.cancel();
-  //   normalScreenOptions();
-  //   super.dispose();
-  // }
 
   void onDraggingChange(bool dragging) {}
 
@@ -351,31 +320,18 @@ class FloatingViewController extends GetxController {
   }
 
   void toggleFullScreen() {
-    if (!isFullScreen.value) {
-      changeAnchor(AnchoringPosition.fullScreen, 'toggleFullScreen');
+    isFullScreen.value = !isFullScreen.value;
 
-      ///is going full screen
-      SystemChrome.setEnabledSystemUIOverlays([]);
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
-    } else {
+    if (!isFullScreen.value) {
       changeAnchor(AnchoringPosition.maximized, 'toggleFullScreen');
-      normalScreenOptions();
+      AutoOrientation.portraitAutoMode();
+      SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    } else {
+      changeAnchor(AnchoringPosition.fullScreen, 'toggleFullScreen');
+      AutoOrientation.landscapeAutoMode();
+      SystemChrome.setEnabledSystemUIOverlays([]);
     }
     update();
-  }
-
-  void normalScreenOptions() {
-    SystemChrome.setEnabledSystemUIOverlays(
-        [SystemUiOverlay.top, SystemUiOverlay.bottom]);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
   }
 
   showOverlay(BuildContext context, WidgetBuilder w) {
@@ -459,5 +415,10 @@ class FloatingViewController extends GetxController {
     savePositionTimer = Timer.periodic(Duration(minutes: 1), (timer) {
       savePosition();
     });
+  }
+
+  void resetControllerTimer() {
+    controllerTimer?.cancel();
+    _startToggleOffTimer();
   }
 }

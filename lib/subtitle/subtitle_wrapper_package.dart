@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
+import 'package:flutter_player/subtitle/data/models/style/subtitle_position.dart';
 import 'package:flutter_player/subtitle/subtitle_controller.dart';
 import 'package:flutter_player/subtitle/subtitle_text_view.dart';
 
@@ -17,41 +18,40 @@ class SubTitleWrapper extends StatelessWidget {
     Key key,
     @required this.subtitleController,
     @required this.controller,
-    this.subtitleStyle = const SubtitleStyle(),
+    this.subtitleStyle =
+        const SubtitleStyle(position: SubtitlePosition(bottom: 0)),
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(10),
-      child: Stack(
-        children: <Widget>[
-          subtitleController.showSubtitles
-              ? Positioned(
-                  top: subtitleStyle.position.top,
-                  bottom: subtitleStyle.position.bottom,
-                  left: subtitleStyle.position.left,
-                  right: subtitleStyle.position.right,
-                  child: BlocProvider(
-                    create: (context) => SubtitleBloc(
-                      controller: controller,
-                      subtitleRepository: SubtitleDataRepository(
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: <Widget>[
+        subtitleController.showSubtitles
+            ? Positioned(
+                top: subtitleStyle.position.top,
+                bottom: subtitleStyle.position.bottom,
+                left: 5,
+                right: 5,
+                child: BlocProvider(
+                  create: (context) => SubtitleBloc(
+                    controller: controller,
+                    subtitleRepository: SubtitleDataRepository(
+                      subtitleController: subtitleController,
+                    ),
+                    subtitleController: subtitleController,
+                  )..add(
+                      InitSubtitles(
                         subtitleController: subtitleController,
                       ),
-                      subtitleController: subtitleController,
-                    )..add(
-                        InitSubtitles(
-                          subtitleController: subtitleController,
-                        ),
-                      ),
-                    child: SubtitleTextView(
-                      subtitleStyle: subtitleStyle,
                     ),
+                  child: SubtitleTextView(
+                    subtitleStyle: subtitleStyle,
                   ),
-                )
-              : SizedBox.shrink()
-        ],
-      ),
+                ),
+              )
+            : SizedBox.shrink()
+      ],
     );
   }
 }

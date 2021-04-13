@@ -24,46 +24,44 @@ class SubtitleTextView extends StatelessWidget {
       },
       builder: (context, state) {
         if (state is LoadedSubtitle) {
-          return Container(
-            child: Stack(
-              children: <Widget>[
-                subtitleStyle.hasBorder
-                    ? Center(
-                        child: AutoSizeText(
-                          state.subtitle.text,
-                          textAlign: TextAlign.center,
-                          maxFontSize:
-                              Theme.of(context).textTheme.headline1.fontSize,
-                          minFontSize:
-                              Theme.of(context).textTheme.subtitle1.fontSize,
-                          style: TextStyle(
-                            fontSize: subtitleStyle.fontSize,
-                            foreground: Paint()
-                              ..style = subtitleStyle.borderStyle.style
-                              ..strokeWidth =
-                                  subtitleStyle.borderStyle.strokeWidth
-                              ..color = subtitleStyle.borderStyle.color,
-                          ),
+          return Stack(
+            children: <Widget>[
+              subtitleStyle.hasBorder
+                  ? Center(
+                      child: AutoSizeText(
+                        state.subtitle.text,
+                        textAlign: TextAlign.center,
+                        maxFontSize:
+                            Theme.of(context).textTheme.headline1.fontSize,
+                        minFontSize:
+                            Theme.of(context).textTheme.subtitle1.fontSize,
+                        style: TextStyle(
+                          fontSize: subtitleStyle.fontSize,
+                          foreground: Paint()
+                            ..style = subtitleStyle.borderStyle.style
+                            ..strokeWidth =
+                                subtitleStyle.borderStyle.strokeWidth
+                            ..color = subtitleStyle.borderStyle.color,
                         ),
-                      )
-                    : Container(
-                        child: null,
                       ),
-                Center(
-                  child: AutoSizeText(
-                    state.subtitle.text,
-                    key: ViewKeys.SUBTITLE_TEXT_CONTENT,
-                    textAlign: TextAlign.center,
-                    maxFontSize: Theme.of(context).textTheme.headline1.fontSize,
-                    minFontSize: Theme.of(context).textTheme.subtitle1.fontSize,
-                    style: TextStyle(
-                      fontSize: subtitleStyle.fontSize,
-                      color: subtitleStyle.textColor,
+                    )
+                  : Container(
+                      child: null,
                     ),
+              Center(
+                child: AutoSizeText(
+                  state.subtitle.text,
+                  key: ViewKeys.SUBTITLE_TEXT_CONTENT,
+                  textAlign: TextAlign.center,
+                  maxFontSize: Theme.of(context).textTheme.headline1.fontSize,
+                  minFontSize: Theme.of(context).textTheme.subtitle1.fontSize,
+                  style: TextStyle(
+                    fontSize: subtitleStyle.fontSize,
+                    color: subtitleStyle.textColor,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         } else {
           return Container();
