@@ -30,26 +30,11 @@ class FloatingWrapper extends StatefulWidget {
 }
 
 class _FloatingWrapperState extends State<FloatingWrapper> {
-  // final FloatingViewController floatingViewController =
-  //     Get.put(FloatingViewController(), permanent: true);
-  //
   @override
   void dispose() {
-    // floatingViewController.playerDispose();
     print('FloatingWrapper onDispose');
     super.dispose();
-    // Get.delete<FloatingViewController>(force: true);
   }
-
-  // @override
-  // void initState() {
-  //   floatingViewController.anchoringPosition(AnchoringPosition.maximized);
-  //   floatingViewController.customControllers = (f) => ControlsOverlay();
-  //   if (widget.customControllers != null) {
-  //     floatingViewController.customController = widget.customControllers;
-  //   }
-  //   super.initState();
-  // }
 
   @override
   Widget build(BuildContext context) {

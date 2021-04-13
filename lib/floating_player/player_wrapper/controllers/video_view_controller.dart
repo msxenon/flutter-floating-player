@@ -14,6 +14,7 @@ import '../../draggable_widget.dart';
 import '../mock_data.dart';
 
 enum TextSizes { normal, medium, large, xlarge }
+enum PlayerState { normal, error }
 
 class PlayerSettingsController extends GetxController {
   SubtitleController subtitleController;
@@ -22,8 +23,8 @@ class PlayerSettingsController extends GetxController {
   bool isEnabled = false;
   Map<String, String> videoResolutions = {};
   String selectedRes;
-  TextSizes textEnum = TextSizes.medium;
-  static const double _defaultTextSize = 10;
+  TextSizes textEnum = TextSizes.normal;
+  static const double _defaultTextSize = 1;
   double textSize = _defaultTextSize;
   Function(Duration, dynamic videoItem, String itemId) onDisposeListener;
   double _getTextSize() {
@@ -33,13 +34,13 @@ class PlayerSettingsController extends GetxController {
         result = 1;
         break;
       case TextSizes.medium:
-        result = 1.3;
-        break;
-      case TextSizes.large:
         result = 1.5;
         break;
+      case TextSizes.large:
+        result = 3;
+        break;
       case TextSizes.xlarge:
-        result = 2;
+        result = 4;
         break;
     }
     return result;
@@ -101,8 +102,13 @@ class PlayerSettingsController extends GetxController {
     String subtitleContent;
     if (isLocal) {
       final File file = File(subtitleLink);
-      subtitleContent = await file.readAsString();
       subtitleLink = null;
+      try {
+        subtitleContent = await file.readAsString();
+      } catch (e) {
+        isEnabled = false;
+        print(e);
+      }
     }
     subtitleController = SubtitleController(
         subtitleUrl: subtitleLink,
@@ -124,6 +130,12 @@ class PlayerSettingsController extends GetxController {
 
     print('toggle subtitle end $isEnabled');
   }
+
+  @override
+  void onClose() {
+    subtitleController.detach();
+    super.onClose();
+  }
 }
 
 extension SubtitleTypeX on SubtitleType {
@@ -136,7 +148,8 @@ class FloatingViewController extends GetxController {
   var controlsIsShowing = false.obs;
   PlayerSettingsController playerSettingsController =
       Get.put(PlayerSettingsController());
-
+  PlayerState playerState = PlayerState.normal;
+  String errorMessage = '';
   bool get showDetails => detailsTopPadding > 0;
   double detailsTopPadding = 0;
   Size screenSize;
@@ -158,6 +171,7 @@ class FloatingViewController extends GetxController {
   final OverlayControllerData customController;
   WidgetBuilder customControllers;
   PlayerData _playerData;
+  final PlayerData playerData;
 
   @override
   onInit() {
@@ -220,19 +234,25 @@ class FloatingViewController extends GetxController {
     }
   }
 
-  final PlayerData playerData;
   Future<void> createController() async {
-    _playerData = playerData;
-    var videoRes = (playerData.videoRes == null || playerData.useMockData)
-        ? {'BigBunny': MockData.mp4Bunny, 'Other': MockData.shortMovie}
-        : playerData.videoRes;
-    var subtitleLink = (playerData.subtitle == null || playerData.useMockData)
-        ? MockData.srt
-        : playerData.subtitle;
-    playerSettingsController.initVideoResolutions(videoRes);
-    await setNewVideo();
-    await playerSettingsController.initSubtitles(subtitleLink: subtitleLink);
-    return;
+    try {
+      _playerData = playerData;
+      var videoRes = (playerData.videoRes == null || playerData.useMockData)
+          ? {'BigBunny': MockData.mp4Bunny, 'Other': MockData.shortMovie}
+          : playerData.videoRes;
+      var subtitleLink = (playerData.subtitle == null || playerData.useMockData)
+          ? MockData.srt
+          : playerData.subtitle;
+      playerSettingsController.initVideoResolutions(videoRes);
+      await setNewVideo();
+      await playerSettingsController.initSubtitles(subtitleLink: subtitleLink);
+      return;
+    } catch (e, s) {
+      debugPrint('createController $e $s');
+      playerState = PlayerState.error;
+      errorMessage = 'Error #1\n$e';
+      return;
+    }
   }
 
   Future<void> setNewVideo() async {
@@ -253,7 +273,7 @@ class FloatingViewController extends GetxController {
       }, autoInitialize: true);
     } else {
       videoPlayerController = VlcPlayerController.network(filePath,
-          hwAcc: HwAcc.FULL,
+          hwAcc: HwAcc.DECODING,
           autoPlay: true,
           options: VlcPlayerOptions(), onInit: () async {
         if (_playerData?.startPosition != null) {
@@ -289,14 +309,12 @@ class FloatingViewController extends GetxController {
 
   @override
   void onClose() async {
-    // isMaximized.close();
-    // dragging.close();
     playerDispose();
     removeOverlay();
     normalScreenOptions();
     _stopSavePositionTimer();
     // videoPlayerController.stopRendererScanning();
-    videoPlayerController.dispose();
+    videoPlayerController?.dispose();
     super.onClose();
   }
 

@@ -36,6 +36,9 @@ class _PlayerState extends State<Player> {
         tag: widget.tag,
         key: Key(widget.tag),
         builder: (model) {
+          if (model.playerState == PlayerState.error) {
+            return Center(child: Text(model.errorMessage));
+          }
           if (model.playerSettingsController.subtitleController == null ||
               !showPLayer) {
             return Center(child: CircularProgressIndicator());

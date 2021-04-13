@@ -255,15 +255,9 @@ class _DraggableWidgetState extends State<DraggableWidget>
                       _floatingViewController.toggleControllers();
                     },
                     onDoubleTap: () {
-                      if (_floatingViewController.isFullScreen.value ||
-                          _floatingViewController.isUsingController.value) {
-                        return;
-                      }
-
-                      if (currentlyDocked == AnchoringPosition.minimized) {
-                        _animateTo(AnchoringPosition.maximized);
+                      if (currentlyDocked != AnchoringPosition.minimized) {
                       } else {
-                        _animateTo(AnchoringPosition.minimized);
+                        _animateTo(AnchoringPosition.maximized);
                       }
                     },
                     onTapDown: (v) async {
@@ -437,6 +431,9 @@ class _DraggableWidgetState extends State<DraggableWidget>
   }
 
   void animateWidget(AnchoringPosition docker, String tag) {
+    if (!mounted) {
+      return;
+    }
     final double totalHeight = boundary;
     final double totalWidth = getPlayerWidth();
     if (_floatingViewController.isFullScreen.value) {
