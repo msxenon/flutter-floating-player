@@ -3,10 +3,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/ui/video_player_both.dart';
 import 'package:flutter_player/subtitle/data/models/style/subtitle_style.dart';
 import 'package:flutter_player/subtitle/subtitle_wrapper_package.dart';
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
+import 'package:video_player/video_player.dart';
 
 import 'controls_overlay.dart';
 
@@ -15,7 +16,7 @@ typedef OverlayControllerData = Widget Function(
     @required String duration,
     @required double sliderValue,
     @required Function(double) sliderUpdate,
-    @required VlcPlayerController controller});
+    @required VideoPlayerController controller});
 
 class VlcPlayerWithControls extends StatefulWidget {
   final FloatingViewController controller;
@@ -59,7 +60,7 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
   void listener() async {
     if (!mounted) return;
     //
-    if (widget.controller.videoPlayerController.value.isInitialized) {
+    if (widget.controller.videoPlayerController.value.initialized) {
       var oPosition = widget.controller.videoPlayerController.value.position;
       var oDuration = widget.controller.videoPlayerController.value.duration;
       if (oPosition != null && oDuration != null) {
@@ -78,10 +79,10 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
             .controller.videoPlayerController.value.position.inSeconds
             .toDouble());
       }
-      numberOfCaptions =
-          widget.controller.videoPlayerController.value.spuTracksCount;
-      numberOfAudioTracks =
-          widget.controller.videoPlayerController.value.audioTracksCount;
+      // numberOfCaptions =
+      //     widget.controller.videoPlayerController.value.spuTracksCount;
+      // numberOfAudioTracks =
+      //     widget.controller.videoPlayerController.value.audioTracksCount;
       //
       setState(() {});
     }
@@ -98,11 +99,13 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
             alignment: Alignment.bottomCenter,
             children: <Widget>[
               Center(
-                child: VlcPlayer(
-                  controller: widget.controller.videoPlayerController,
-                  aspectRatio: 16 / 9,
-                  placeholder: Center(child: CircularProgressIndicator()),
-                ),
+                child: VideoPlayerBothWidget(
+                    controller: widget.controller.videoPlayerController),
+                // child: VlcPlayer(
+                //   controller: widget.controller.videoPlayerController,
+                //   aspectRatio: 16 / 9,
+                //   placeholder: Center(child: CircularProgressIndicator()),
+                // ),
               ),
               SubTitleWrapper(
                 controller: widget.controller,
@@ -144,13 +147,13 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
   }
 
   setSliderValue(double newSliderValue) {
-    if (widget.controller.videoPlayerController.value.isEnded) {
-      sliderValue = widget
-          .controller.videoPlayerController.value.duration.inSeconds
-          .toDouble();
-    } else {
-      sliderValue = newSliderValue;
-    }
+    // if (widget.controller.videoPlayerController.value.isEnded) {
+    //   sliderValue = widget
+    //       .controller.videoPlayerController.value.duration.inSeconds
+    //       .toDouble();
+    // } else {
+    sliderValue = newSliderValue;
+    // }
   }
 }
 

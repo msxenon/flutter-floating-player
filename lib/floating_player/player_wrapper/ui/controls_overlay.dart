@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
 
 class ControlsOverlay extends StatelessWidget {
@@ -23,108 +22,108 @@ class ControlsOverlay extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
-        AnimatedSwitcher(
-          duration: Duration(milliseconds: 50),
-          reverseDuration: Duration(milliseconds: 200),
-          child: Obx(() {
-            if (!controller.isMaximized.value) {
-              return SizedBox.shrink();
-            }
-            return Builder(
-              builder: (ctx) {
-                if (controller.videoPlayerController.value.isEnded) {
-                  return Center(
-                    child: IconButton(
-                      onPressed: () async {
-                        await controller.videoPlayerController.stop();
-                        await controller.videoPlayerController.play();
-                      },
-                      color: Colors.white,
-                      iconSize: 100.0,
-                      icon: Icon(Icons.replay),
-                    ),
-                  );
-                } else {
-                  switch (controller.videoPlayerController.value.playingState) {
-                    case PlayingState.initializing:
-                      return CircularProgressIndicator();
-
-                    case PlayingState.initialized:
-                    case PlayingState.stopped:
-                    case PlayingState.paused:
-                      return SizedBox.expand(
-                        child: Container(
-                          color: Colors.black45,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              IconButton(
-                                onPressed: () async {
-                                  if (controller.videoPlayerController.value
-                                          .duration !=
-                                      null) {
-                                    await controller.videoPlayerController
-                                        .seekTo(controller.videoPlayerController
-                                                .value.position -
-                                            Duration(seconds: 10));
-                                  }
-                                },
-                                color: Colors.white,
-                                iconSize: 60.0,
-                                icon: Icon(Icons.replay_10),
-                              ),
-                              IconButton(
-                                onPressed: () async {
-                                  await controller.videoPlayerController.play();
-                                },
-                                color: Colors.white,
-                                iconSize: 100.0,
-                                icon: Icon(Icons.play_arrow),
-                              ),
-                              IconButton(
-                                onPressed: () async {
-                                  if (controller.videoPlayerController.value
-                                          .duration !=
-                                      null) {
-                                    await controller.videoPlayerController
-                                        .seekTo(controller.videoPlayerController
-                                                .value.position +
-                                            Duration(seconds: 10));
-                                  }
-                                },
-                                color: Colors.white,
-                                iconSize: 60.0,
-                                icon: Icon(Icons.forward_10),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-
-                    case PlayingState.buffering:
-                    case PlayingState.playing:
-                      return SizedBox.shrink();
-
-                    case PlayingState.ended:
-                    case PlayingState.error:
-                      return Center(
-                        child: IconButton(
-                          onPressed: () async {
-                            await controller.videoPlayerController.play();
-                          },
-                          color: Colors.white,
-                          iconSize: 100.0,
-                          icon: Icon(Icons.replay),
-                        ),
-                      );
-                  }
-                }
-                return SizedBox.shrink();
-              },
-            );
-          }),
-        ),
+        // AnimatedSwitcher(
+        //   duration: Duration(milliseconds: 50),
+        //   reverseDuration: Duration(milliseconds: 200),
+        //   child: Obx(() {
+        //     if (!controller.isMaximized.value) {
+        //       return SizedBox.shrink();
+        //     }
+        //     return Builder(
+        //       builder: (ctx) {
+        //         if (controller.videoPlayerController.value.) {
+        //           return Center(
+        //             child: IconButton(
+        //               onPressed: () async {
+        //                 await controller.videoPlayerController.stop();
+        //                 await controller.videoPlayerController.play();
+        //               },
+        //               color: Colors.white,
+        //               iconSize: 100.0,
+        //               icon: Icon(Icons.replay),
+        //             ),
+        //           );
+        //         } else {
+        //           switch (controller.videoPlayerController.value.playingState) {
+        //             case PlayingState.initializing:
+        //               return CircularProgressIndicator();
+        //
+        //             case PlayingState.initialized:
+        //             case PlayingState.stopped:
+        //             case PlayingState.paused:
+        //               return SizedBox.expand(
+        //                 child: Container(
+        //                   color: Colors.black45,
+        //                   child: Row(
+        //                     crossAxisAlignment: CrossAxisAlignment.center,
+        //                     mainAxisAlignment: MainAxisAlignment.spaceAround,
+        //                     children: [
+        //                       IconButton(
+        //                         onPressed: () async {
+        //                           if (controller.videoPlayerController.value
+        //                                   .duration !=
+        //                               null) {
+        //                             await controller.videoPlayerController
+        //                                 .seekTo(controller.videoPlayerController
+        //                                         .value.position -
+        //                                     Duration(seconds: 10));
+        //                           }
+        //                         },
+        //                         color: Colors.white,
+        //                         iconSize: 60.0,
+        //                         icon: Icon(Icons.replay_10),
+        //                       ),
+        //                       IconButton(
+        //                         onPressed: () async {
+        //                           await controller.videoPlayerController.play();
+        //                         },
+        //                         color: Colors.white,
+        //                         iconSize: 100.0,
+        //                         icon: Icon(Icons.play_arrow),
+        //                       ),
+        //                       IconButton(
+        //                         onPressed: () async {
+        //                           if (controller.videoPlayerController.value
+        //                                   .duration !=
+        //                               null) {
+        //                             await controller.videoPlayerController
+        //                                 .seekTo(controller.videoPlayerController
+        //                                         .value.position +
+        //                                     Duration(seconds: 10));
+        //                           }
+        //                         },
+        //                         color: Colors.white,
+        //                         iconSize: 60.0,
+        //                         icon: Icon(Icons.forward_10),
+        //                       ),
+        //                     ],
+        //                   ),
+        //                 ),
+        //               );
+        //
+        //             case PlayingState.buffering:
+        //             case PlayingState.playing:
+        //               return SizedBox.shrink();
+        //
+        //             case PlayingState.ended:
+        //             case PlayingState.error:
+        //               return Center(
+        //                 child: IconButton(
+        //                   onPressed: () async {
+        //                     await controller.videoPlayerController.play();
+        //                   },
+        //                   color: Colors.white,
+        //                   iconSize: 100.0,
+        //                   icon: Icon(Icons.replay),
+        //                 ),
+        //               );
+        //           }
+        //         }
+        //         return SizedBox.shrink();
+        //       },
+        //     );
+        //   }),
+        // ),
         Visibility(
           visible: controller.controllersCanBeVisible.value &&
               controller.controlsIsShowing.value,
@@ -180,16 +179,16 @@ class ControlsOverlay extends StatelessWidget {
                           style: TextStyle(color: Colors.white, fontSize: 10),
                         ),
                         SizedBox(height: 5),
-                        Text(
-                          'Status: ' +
-                              controller
-                                  .videoPlayerController.value.playingState
-                                  .toString()
-                                  .split('.')[1],
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: Colors.white, fontSize: 10),
-                        ),
+                        // Text(
+                        //   'Status: ' +
+                        //       controller
+                        //           .videoPlayerController.value.playingState
+                        //           .toString()
+                        //           .split('.')[1],
+                        //   textAlign: TextAlign.center,
+                        //   overflow: TextOverflow.ellipsis,
+                        //   style: TextStyle(color: Colors.white, fontSize: 10),
+                        // ),
                       ],
                     ),
                   ),
@@ -244,8 +243,8 @@ class ControlsOverlay extends StatelessWidget {
                             onChanged: (progress) {
                               sliderUpdate(progress);
                               //convert to Milliseconds since VLC requires MS to set time
-                              controller.videoPlayerController
-                                  .setTime(sliderValue.toInt() * 1000);
+                              // controller.videoPlayerController
+                              //     .setTime(sliderValue.toInt() * 1000);
                             },
                           ),
                         ),

@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:flutter_player/subtitle/subtitle_controller.dart';
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:get/get.dart';
+import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
 
 import '../../draggable_widget.dart';
@@ -144,7 +144,7 @@ extension SubtitleTypeX on SubtitleType {
 
 class FloatingViewController extends GetxController {
   final Duration toggleOffDuration = const Duration(seconds: 5);
-  VlcPlayerController videoPlayerController;
+  VideoPlayerController videoPlayerController;
   var controlsIsShowing = false.obs;
   PlayerSettingsController playerSettingsController =
       Get.put(PlayerSettingsController());
@@ -259,30 +259,35 @@ class FloatingViewController extends GetxController {
     final filePath = playerSettingsController.getVideo();
     bool isLocal = !filePath.startsWith('http');
     debugPrint('setNewVideo $filePath => isLocal? $isLocal');
+    //todo
     if (isLocal) {
-      videoPlayerController = VlcPlayerController.file(File(filePath),
-          hwAcc: HwAcc.FULL,
-          autoPlay: true,
-          options: VlcPlayerOptions(), onInit: () async {
-        if (_playerData?.startPosition != null) {
-          await Future.delayed(Duration(milliseconds: 1000));
-          if (videoPlayerController?.value?.isInitialized == true) {
-            videoPlayerController?.seekTo(_playerData.startPosition);
-          }
-        }
-      }, autoInitialize: true);
+      // videoPlayerController = VlcPlayerController.file(File(filePath),
+      //     hwAcc: HwAcc.FULL,
+      //     autoPlay: true,
+      //     options: VlcPlayerOptions(), onInit: () async {
+      //   if (_playerData?.startPosition != null) {
+      //     await Future.delayed(Duration(milliseconds: 1000));
+      //     if (videoPlayerController?.value?.isInitialized == true) {
+      //       videoPlayerController?.seekTo(_playerData.startPosition);
+      //     }
+      //   }
+      // }, autoInitialize: true);
     } else {
-      videoPlayerController = VlcPlayerController.network(filePath,
-          hwAcc: HwAcc.DECODING,
-          autoPlay: true,
-          options: VlcPlayerOptions(), onInit: () async {
-        if (_playerData?.startPosition != null) {
-          await Future.delayed(Duration(milliseconds: 1000));
-          if (videoPlayerController?.value?.isInitialized == true) {
-            videoPlayerController?.seekTo(_playerData.startPosition);
-          }
-        }
-      }, autoInitialize: true);
+      videoPlayerController = VideoPlayerController.network(filePath)
+        // ..addListener(() => setState(() {}))
+        ..setLooping(true)
+        ..initialize().then((_) => videoPlayerController.play());
+      // videoPlayerController = VlcPlayerController.network(filePath,
+      //     hwAcc: HwAcc.DECODING,
+      //     autoPlay: true,
+      //     options: VlcPlayerOptions(), onInit: () async {
+      //   if (_playerData?.startPosition != null) {
+      //     await Future.delayed(Duration(milliseconds: 1000));
+      //     if (videoPlayerController?.value?.isInitialized == true) {
+      //       videoPlayerController?.seekTo(_playerData.startPosition);
+      //     }
+      //   }
+      // }, autoInitialize: true);
     }
 
     videoPlayerController.addListener(() async {
