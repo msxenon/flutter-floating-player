@@ -257,6 +257,7 @@ class FloatingViewController extends GetxController {
   }
 
   Future<void> setNewVideo() async {
+    playerState = PlayerState.normal;
     final filePath = playerSettingsController.getVideo();
     bool isLocal = !filePath.startsWith('http');
     debugPrint('setNewVideo $filePath => isLocal? $isLocal');
@@ -272,6 +273,11 @@ class FloatingViewController extends GetxController {
 
     videoPlayerController.addListener(() async {
       await refreshWakelock();
+      if (videoPlayerController.value.hasError) {
+        errorMessage = videoPlayerController.value.errorDescription;
+        playerState = PlayerState.error;
+        update();
+      }
     });
 
     return;

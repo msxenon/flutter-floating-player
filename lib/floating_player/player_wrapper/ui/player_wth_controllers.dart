@@ -87,32 +87,28 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Stack(
-      children: [
-        Container(
-          color: Colors.black,
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            children: <Widget>[
-              Center(
-                child: VideoPlayerBothWidget(controller: widget.controller),
-              ),
-              widget.controller.customController != null
-                  ? widget.controller.customController(
-                      controller: widget.controller.videoPlayerController,
-                      position: position,
-                      duration: duration,
-                      sliderValue: sliderValue,
-                      sliderUpdate: (progress) {
-                        setState(() {
-                          setSliderValue(progress.floor().toDouble());
-                        });
-                      })
-                  : SizedBox(),
-            ],
+    return Container(
+      color: Colors.black,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: <Widget>[
+          Center(
+            child: VideoPlayerBothWidget(controller: widget.controller),
           ),
-        ),
-      ],
+          // widget.controller.customController != null
+          //     ? widget.controller.customController(
+          //         controller: widget.controller.videoPlayerController,
+          //         position: position,
+          //         duration: duration,
+          //         sliderValue: sliderValue,
+          //         sliderUpdate: (progress) {
+          //           setState(() {
+          //             setSliderValue(progress.floor().toDouble());
+          //           });
+          //         })
+          //     : SizedBox(),
+        ],
+      ),
     );
   }
 

@@ -37,7 +37,10 @@ class _PlayerState extends State<Player> {
         key: Key(widget.tag),
         builder: (model) {
           if (model.playerState == PlayerState.error) {
-            return Center(child: Text(model.errorMessage));
+            return Center(
+                child: Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Text(model.errorMessage)));
           }
           if (model.playerSettingsController.subtitleController == null ||
               !showPLayer) {
