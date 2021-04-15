@@ -46,30 +46,19 @@ class PLayerNav {
 
   ///returns false if overlay just dismissed
   static bool clearViews(String tag,
-      {bool forceClear = false,
-      bool clearVideo = false,
-      bool justMinimize = true}) {
+      {bool forceClear = false, bool justMinimize = true}) {
     try {
       //print('clearView called $forceClear ${overlayEntry != null} $tag');
       if (overlayEntry != null) {
         final controller = Get.find<FloatingViewController>();
-        void _clearVideo() {
-          // controller.onClose();
-        }
 
         void forceClearVoid() {
           overlayEntry.dismiss(animate: false);
           overlayEntry = null;
           _lastOverlayId = null;
-          _clearVideo();
         }
 
-        if (clearVideo) {
-          _clearVideo();
-          return false;
-        }
-
-        if (forceClear) {
+        if (forceClear || controller.playerState == PlayerState.error) {
           forceClearVoid();
           return false;
         }
