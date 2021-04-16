@@ -81,7 +81,7 @@ class PLayerNav {
     return clearViews('canPopup');
   }
 
-  static _removeOverlayIfExist(Color bgColor) async {
+  static Future<void> _removeOverlayIfExist(Color bgColor) async {
     if (overlayEntry == null) {
       return;
     }
@@ -89,24 +89,25 @@ class PLayerNav {
       showOverlay((context, progress) {
         return Container(
           color: bgColor,
-          child: Center(
+          child: const Center(
             child: CircularProgressIndicator(),
           ),
         );
-      }, duration: Duration(milliseconds: 150));
+      }, duration: const Duration(milliseconds: 150));
     }
     overlayEntry.dismiss(animate: false);
     overlayEntry = null;
     _lastOverlayId = null;
-    await Future.delayed(Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 100));
     return;
   }
 }
 
 class PlayerAwareScaffold extends StatelessWidget {
+  const PlayerAwareScaffold({Key key, this.child}) : super(key: key);
+
   final Widget child;
 
-  const PlayerAwareScaffold({Key key, this.child}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return WillPopScope(

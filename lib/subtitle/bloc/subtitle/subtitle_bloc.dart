@@ -14,12 +14,6 @@ part 'subtitle_event.dart';
 part 'subtitle_state.dart';
 
 class SubtitleBloc extends Bloc<SubtitleEvent, SubtitleState> {
-  final FloatingViewController controller;
-  final SubtitleRepository subtitleRepository;
-  final SubtitleController subtitleController;
-
-  Subtitles subtitles;
-
   SubtitleBloc({
     @required this.controller,
     @required this.subtitleRepository,
@@ -27,6 +21,12 @@ class SubtitleBloc extends Bloc<SubtitleEvent, SubtitleState> {
   }) : super(SubtitleInitial()) {
     subtitleController.attach(this);
   }
+
+  final FloatingViewController controller;
+  final SubtitleRepository subtitleRepository;
+  final SubtitleController subtitleController;
+
+  Subtitles subtitles;
 
   @override
   Stream<SubtitleState> mapEventToState(
@@ -50,9 +50,10 @@ class SubtitleBloc extends Bloc<SubtitleEvent, SubtitleState> {
   Stream<SubtitleState> loadSubtitle() async* {
     yield LoadingSubtitle();
     controller.videoPlayerController.addListener(() {
-      var videoPlayerPosition = controller.videoPlayerController.value.position;
+      final videoPlayerPosition =
+          controller.videoPlayerController.value.position;
       if (videoPlayerPosition != null) {
-        for (var subtitleItem in subtitles.subtitles) {
+        for (final subtitleItem in subtitles.subtitles) {
           if (videoPlayerPosition.inMilliseconds >
                   subtitleItem.startTime.inMilliseconds &&
               videoPlayerPosition.inMilliseconds <

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/mock_data.dart';
 import 'package:flutter_player/player_init.dart';
 import 'package:get/get.dart';
 import 'package:overlay_support/overlay_support.dart';
@@ -45,7 +46,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title: 'Floating Player'}) : super(key: key);
+  MyHomePage({Key key, this.title = 'Floating Player'}) : super(key: key);
   final String title;
 
   @override
@@ -72,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       title: 'Dynamic Page',
                     ));
                   },
-                  child: Text('Open Dynamic Pages'),
+                  child: const Text('Open Dynamic Pages'),
                 ),
               ],
             ),
@@ -84,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class SecondPage extends StatefulWidget {
-  SecondPage({Key key, this.title: 'No title'}) : super(key: key);
+  SecondPage({Key key, this.title = 'No title'}) : super(key: key);
   final String title;
 
   @override
@@ -95,19 +96,20 @@ void showPLayer(String id) {
   PLayerNav.showPlayer(
     bgColor: Colors.black,
     playerData: PlayerData<String, String>(
-        itemTitle: 'test',
-        startPosition: Duration(seconds: 20 ?? 0),
+        itemTitle: 'BigBuckBunny / VttSUB',
+        startPosition: const Duration(seconds: 20 ?? 0),
         onDispose: () {},
         itemId: id,
+        subtitle: MockData.testVtt,
         videoItem: 'movieX',
         savePosition: (x) {
-          print('savePos callback $x');
+          debugPrint('savePos callback $x');
         }),
     details: (_) => FlatButton(
         onPressed: () {
-          showPLayer(id + 'kdk');
+          showPLayer('${id}kdk');
         },
-        child: Text(
+        child: const Text(
           'Play nested',
           style: TextStyle(color: Colors.white),
         )),
@@ -129,23 +131,23 @@ class _SecState extends State<SecondPage> {
               onPressed: () {
                 showPLayer('33');
               },
-              child: Text('Open Floating Player Screen'),
+              child: const Text('Open Floating Player Screen'),
             ),
             RaisedButton(
               onPressed: () {
                 showPLayer('44');
               },
-              child: Text('Open Floating Player Screen'),
+              child: const Text('Open Floating Player Screen'),
             ),
             RaisedButton(
               onPressed: () {
                 Get.to(
                     SecondPage(
-                      title: widget.title + ' |',
+                      title: '${widget.title} |',
                     ),
                     preventDuplicates: false);
               },
-              child: Text('Open New Page'),
+              child: const Text('Open New Page'),
             ),
           ],
         ),

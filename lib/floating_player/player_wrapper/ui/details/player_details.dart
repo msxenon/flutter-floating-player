@@ -4,36 +4,37 @@ import 'package:get/get.dart';
 import 'package:get/get_state_manager/src/simple/get_state.dart';
 
 class PLayerDetails extends StatelessWidget {
-  final WidgetBuilder child;
-  final Color bgColor;
   PLayerDetails({
     @required this.floatingViewController,
     Key key,
     this.child,
     this.bgColor,
   }) : super(key: key);
+  final WidgetBuilder child;
+  final Color bgColor;
+
   final FloatingViewController floatingViewController;
   @override
   Widget build(BuildContext context) {
     return Container(
       color: bgColor ?? Colors.black,
-      constraints: BoxConstraints.expand(),
+      constraints: const BoxConstraints.expand(),
       child: GetBuilder<FloatingViewController>(
         init: floatingViewController,
         builder: (FloatingViewController model) {
           return Container(
             color: Colors.black,
             padding: EdgeInsets.only(top: model.detailsTopPadding),
-            constraints: BoxConstraints.expand(),
+            constraints: const BoxConstraints.expand(),
             child: !model.showDetails
-                ? SizedBox.shrink()
+                ? const SizedBox.shrink()
                 : child != null
                     ? child(context)
                     : ListView.builder(
                         itemBuilder: (_, index) => ListTile(
                           title: Text(
                             'Item $index',
-                            style: TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                           ),
                         ),
                         padding: EdgeInsets.zero,

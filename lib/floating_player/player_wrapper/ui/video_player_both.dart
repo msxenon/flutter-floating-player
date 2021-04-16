@@ -10,12 +10,12 @@ import 'package:video_player/video_player.dart';
 import 'advanced_overlay_widget.dart';
 
 class VideoPlayerBothWidget extends StatefulWidget {
-  final FloatingViewController controller;
-
   const VideoPlayerBothWidget({
-    Key key,
     @required this.controller,
+    Key key,
   }) : super(key: key);
+
+  final FloatingViewController controller;
 
   @override
   _VideoPlayerBothWidgetState createState() => _VideoPlayerBothWidgetState();
@@ -33,7 +33,7 @@ class _VideoPlayerBothWidgetState extends State<VideoPlayerBothWidget> {
   Widget build(BuildContext context) => widget.controller != null &&
           widget.controller.videoPlayerController.value.initialized
       ? Container(alignment: Alignment.topCenter, child: buildVideo())
-      : Center(child: CircularProgressIndicator());
+      : const Center(child: CircularProgressIndicator());
 
   Widget buildVideo() => OrientationBuilder(
         builder: (context, orientation) {
@@ -52,7 +52,7 @@ class _VideoPlayerBothWidgetState extends State<VideoPlayerBothWidget> {
                         widget.controller.playerSettingsController
                             .getTextSize(widget.controller.isFullScreen.value),
                     hasBorder: true,
-                    position: SubtitlePosition(bottom: 5)),
+                    position: const SubtitlePosition(bottom: 5)),
               ),
               Positioned.fill(
                 child: AdvancedOverlayWidget(

@@ -4,8 +4,11 @@ import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_cont
 import 'package:get/get.dart';
 
 class Player extends StatefulWidget {
-  Player({Key key, @required this.floatingViewController, @required this.tag})
-      : super(key: key);
+  Player({
+    @required this.floatingViewController,
+    @required this.tag,
+    Key key,
+  }) : super(key: key);
   final FloatingViewController floatingViewController;
   final String tag;
   @override
@@ -39,12 +42,22 @@ class _PlayerState extends State<Player> {
           if (model.playerState == PlayerState.error) {
             return Center(
                 child: Padding(
-                    padding: EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(10),
                     child: Text(model.errorMessage)));
+          }
+          if (model.playerState == PlayerState.casting) {
+            return Center(
+                child: IconButton(
+              icon: const Icon(
+                Icons.cast_connected,
+                color: Colors.white,
+              ),
+              onPressed: model.disconnectCasting,
+            ));
           }
           if (model.playerSettingsController.subtitleController == null ||
               !showPLayer) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
           return VlcPlayerWithControls(
             controller: model,

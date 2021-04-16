@@ -7,15 +7,16 @@ import 'data/constants/view_keys.dart';
 import 'data/models/style/subtitle_style.dart';
 
 class SubtitleTextView extends StatelessWidget {
+  const SubtitleTextView({
+    @required this.subtitleStyle,
+    Key key,
+  }) : super(key: key);
   final SubtitleStyle subtitleStyle;
-
-  const SubtitleTextView({Key key, @required this.subtitleStyle})
-      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     // ignore: close_sinks
-    var subtitleBloc = BlocProvider.of<SubtitleBloc>(context);
+    final subtitleBloc = BlocProvider.of<SubtitleBloc>(context);
     return BlocConsumer<SubtitleBloc, SubtitleState>(
       listener: (context, state) {
         if (state is SubtitleInitialized) {

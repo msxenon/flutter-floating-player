@@ -6,14 +6,14 @@ import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 
 class AdvancedOverlayWidget extends StatelessWidget {
+  const AdvancedOverlayWidget({
+    @required this.controller,
+    Key key,
+    this.onClickedFullScreen,
+  }) : super(key: key);
   final FloatingViewController controller;
   final VoidCallback onClickedFullScreen;
 
-  const AdvancedOverlayWidget({
-    Key key,
-    @required this.controller,
-    this.onClickedFullScreen,
-  }) : super(key: key);
   static const autoSeekSeconds = 10;
   String getPosition() {
     final duration = Duration(
@@ -29,7 +29,7 @@ class AdvancedOverlayWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => GestureDetector(
         behavior: HitTestBehavior.translucent,
-        onTap: () => controller.toggleControllers(),
+        onTap: controller.toggleControllers,
         child: Obx(() {
           final double iconSize = controller.isFullScreen.value ? 40 : 24;
 
@@ -51,7 +51,7 @@ class AdvancedOverlayWidget extends StatelessWidget {
                       bottom: 28,
                       child: Text(
                         getPosition(),
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                     Positioned(
@@ -63,7 +63,7 @@ class AdvancedOverlayWidget extends StatelessWidget {
                           Expanded(child: buildIndicator()),
                           const SizedBox(width: 12),
                           GestureDetector(
-                            child: Icon(
+                            child: const Icon(
                               Icons.fullscreen,
                               color: Colors.white,
                               size: 28,
@@ -82,33 +82,29 @@ class AdvancedOverlayWidget extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          CastIcon(
-                            onTap: (f) {
-                              f.forEach((element) {
-                                print(
-                                    '${element.name} ${element.serviceName} ${element.host} ${element.port}');
-                              });
-                              showFloatingBottomSheet(
-                                context,
-                                controller,
-                                List.generate(f.length, (index) {
-                                  final e = f[index];
-                                  return ListTile(
-                                    title: Text(e.name),
-                                    onTap: () {
-                                      Get.find<PlayerSettings>().cast(e);
-                                    },
-                                  );
-                                }),
-                              );
-                            },
-                          ),
+                          if (!controller.isPlayingLocally)
+                            CastIcon(
+                              onTap: (f) {
+                                showFloatingBottomSheet(
+                                  context,
+                                  controller,
+                                  List.generate(f.length, (index) {
+                                    final e = f[index];
+                                    return FloatingSheetListTile(
+                                      floatingViewController: controller,
+                                      title: e.name,
+                                      onTap: () => controller.startCasting(e),
+                                    );
+                                  }),
+                                );
+                              },
+                            ),
                           IconButton(
                             onPressed: () => showFloatingBottomSheet(
                                 context, controller, null),
                             color: Colors.white,
                             iconSize: iconSize,
-                            icon: Icon(Icons.menu),
+                            icon: const Icon(Icons.menu),
                           ),
                         ],
                       ),
@@ -120,7 +116,18 @@ class AdvancedOverlayWidget extends StatelessWidget {
                           onPressed: controller.minimize,
                           color: Colors.white,
                           iconSize: iconSize,
-                          icon: Icon(Icons.keyboard_arrow_down),
+                          icon: const Icon(Icons.keyboard_arrow_down),
+                        ),
+                      ),
+                    if (controller.isFullScreen.value)
+                      Align(
+                        alignment: AlignmentDirectional.topStart,
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Text(
+                            controller.playerData.itemTitle,
+                            style: const TextStyle(color: Colors.white),
+                          ),
                         ),
                       )
                   ],
@@ -132,7 +139,7 @@ class AdvancedOverlayWidget extends StatelessWidget {
       );
 
   Widget buildIndicator() => Container(
-        margin: EdgeInsets.all(8).copyWith(right: 0),
+        margin: const EdgeInsets.all(8).copyWith(right: 0),
         height: 16,
         child: VideoProgressIndicator(
           controller.videoPlayerController,
@@ -166,7 +173,7 @@ class AdvancedOverlayWidget extends StatelessWidget {
 
                     controller.videoPlayerController.seekTo(
                         controller.videoPlayerController.value.position -
-                            Duration(seconds: autoSeekSeconds));
+                            const Duration(seconds: autoSeekSeconds));
                   }
                 : null,
           ),
@@ -203,7 +210,7 @@ class AdvancedOverlayWidget extends StatelessWidget {
 
                     controller.videoPlayerController.seekTo(
                         controller.videoPlayerController.value.position +
-                            Duration(seconds: autoSeekSeconds));
+                            const Duration(seconds: autoSeekSeconds));
                   }
                 : null,
           ),

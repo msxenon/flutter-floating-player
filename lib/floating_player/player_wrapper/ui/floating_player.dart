@@ -9,33 +9,27 @@ import 'package:get/get.dart';
 import 'details/player_details.dart';
 
 class FloatingWrapper extends StatefulWidget {
+  FloatingWrapper(
+      {@required this.onRemove,
+      this.details,
+      this.bgColor,
+      this.playerData,
+      this.bottomMargin = 80,
+      this.customControllers,
+      Key key})
+      : super(key: key);
   final WidgetBuilder details;
   final Color bgColor;
   final Function onRemove;
   final double bottomMargin;
   final OverlayControllerData customControllers;
   final PlayerData playerData;
-  FloatingWrapper(
-      {this.details,
-      this.bgColor,
-      this.playerData,
-      @required this.onRemove,
-      this.bottomMargin: 80,
-      this.customControllers,
-      Key key})
-      : super(key: key);
 
   @override
   _FloatingWrapperState createState() => _FloatingWrapperState();
 }
 
 class _FloatingWrapperState extends State<FloatingWrapper> {
-  @override
-  void dispose() {
-    print('FloatingWrapper onDispose');
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return GetBuilder<FloatingViewController>(
@@ -53,7 +47,7 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
                   () => IgnorePointer(
                     ignoring: !model.isMaximized.value,
                     child: AnimatedOpacity(
-                      duration: Duration(milliseconds: 250),
+                      duration: const Duration(milliseconds: 250),
                       opacity:
                           (model.isMaximized.value && !model.dragging.value)
                               ? 1
@@ -76,7 +70,7 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
                     dragAnimationScale: 0.5,
                     shadowBorderRadius: 0,
                     initialHeight: model.initialHeight,
-                    touchDelay: Duration(milliseconds: 100),
+                    touchDelay: const Duration(milliseconds: 100),
                     child: Player(
                       floatingViewController: model,
                       key: Key(widget.playerData.itemId),

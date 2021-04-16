@@ -18,46 +18,42 @@ class PlayerSettings extends GetxService {
     await CastDiscoveryService().start();
   }
 
-  Future<void> cast(CastDevice device) async {
-    final session = await CastSessionManager().startSession(device);
+  CastSession _session;
+  Future<void> cast(CastDevice device, Map<String, dynamic> payload) async {
+    _session = await CastSessionManager().startSession(device);
 
-    session.stateStream.listen((state) {
-      isConnected(CastSessionState.connected == state);
-
+    _session.stateStream.listen((state) {
+      debugPrint('newState $state ===========================================');
       if (state == CastSessionState.connected) {
-        sendMessage(session);
+        sendMessage(payload);
       }
+      isConnected(CastSessionState.connected == state);
     });
 
-    session.messageStream.listen((message) {
-      print('receive message: $message');
+    _session.messageStream.listen((message) {
+      debugPrint('receive message Start======================================');
+      debugPrint('$message');
+      debugPrint('receive message End========================================');
     });
 
-    session.sendMessage(CastSession.kNamespaceReceiver, {
+    _session.sendMessage(CastSession.kNamespaceReceiver, {
       'type': 'LAUNCH',
       'appId': appId,
     });
   }
 
-  void sendMessage(CastSession session) {
-    print('should play video');
-    session.sendMessage(CastSession.kNamespaceMedia, {
-      'type': 'LOAD',
-      'autoPlay': true,
-      'currentTime': 0,
-      'activeTracks': [],
-      'media': {
-        'contentId':
-            "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_20MB.mp4",
-        'contentType': "video/mp4",
-        'images': [],
-        'title': "Big Buck Bunny",
-        'streamType': 'BUFFERED'
-      }
+  void sendMessage(Map<String, dynamic> message) {
+    debugPrint('message will be send ========================================');
+    debugPrint('$message');
+    _session.sendMessage(CastSession.kNamespaceMedia, message);
+    debugPrint('message sent ================================================');
+  }
+
+  void disconnect() async {
+    _session.sendMessage(CastSession.kNamespaceConnection, {
+      'type': 'CLOSE',
     });
-    // session.sendMessage('urn:x-cast:namespace-of-the-app', {
-    //   'type': 'sample',
-    // });
+    isConnected(false);
   }
 }
 
@@ -73,13 +69,13 @@ class CastIcon extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.cast,
                 color: Colors.white,
               ),
               onPressed: onTap != null ? () => onTap(snapshot.data) : null);
         } else {
-          return SizedBox.shrink();
+          return const SizedBox.shrink();
         }
       },
     );

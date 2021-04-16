@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_orientation/auto_orientation.dart';
+import 'package:cast/cast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
+import 'package:flutter_player/player_init.dart';
 import 'package:flutter_player/subtitle/subtitle_controller.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
@@ -15,7 +17,7 @@ import '../../draggable_widget.dart';
 import '../mock_data.dart';
 
 enum TextSizes { normal, medium, large, xlarge }
-enum PlayerState { normal, error }
+enum PlayerState { normal, error, casting }
 
 class PlayerSettingsController extends GetxController {
   SubtitleController subtitleController;
@@ -64,7 +66,7 @@ class PlayerSettingsController extends GetxController {
     }
     selectedRes = name;
     Get.find<FloatingViewController>().setNewVideo();
-    print('video set $name ${getVideo()}');
+    debugPrint('video set $name ${getVideo()}');
     update();
   }
 
@@ -73,7 +75,7 @@ class PlayerSettingsController extends GetxController {
   }
 
   Future<void> initSubtitles({String subtitleLink}) async {
-    this.link = subtitleLink;
+    link = subtitleLink;
     return _setSubtitle();
   }
 
@@ -89,13 +91,13 @@ class PlayerSettingsController extends GetxController {
 
   Future<void> _setSubtitle() async {
     var subtitleLink = link;
-    var subtitleType = SubtitleType.values.firstWhere(
+    final subtitleType = SubtitleType.values.firstWhere(
         (e) => subtitleLink.split('.')?.last == e.getName(),
         orElse: () => SubtitleType.webvtt);
     if (subtitleController == null) {
       isEnabled = link?.isNotEmpty == true;
     }
-    bool isLocal = isEnabled ? !subtitleLink.startsWith('http') : false;
+    final isLocal = isEnabled ? !subtitleLink.startsWith('http') : false;
 
     debugPrint('setSubtitle $subtitleLink => isLocal? $isLocal $subtitleType');
     String subtitleContent;
@@ -106,7 +108,7 @@ class PlayerSettingsController extends GetxController {
         subtitleContent = await file.readAsString();
       } catch (e) {
         isEnabled = false;
-        print(e);
+        debugPrint(e);
       }
     }
     subtitleController = SubtitleController(
@@ -119,7 +121,7 @@ class PlayerSettingsController extends GetxController {
   }
 
   void toggleSubtitle(bool forceIsEnabled) {
-    print('toggle subtitle $forceIsEnabled == $isEnabled');
+    debugPrint('toggle subtitle $forceIsEnabled == $isEnabled');
 
     if (forceIsEnabled == isEnabled) {
       return;
@@ -127,7 +129,7 @@ class PlayerSettingsController extends GetxController {
     isEnabled = forceIsEnabled;
     update();
 
-    print('toggle subtitle end $isEnabled');
+    debugPrint('toggle subtitle end $isEnabled');
   }
 
   @override
@@ -138,10 +140,60 @@ class PlayerSettingsController extends GetxController {
 }
 
 extension SubtitleTypeX on SubtitleType {
-  getName() => this.toString().split('.').last;
+  String getName() => toString().split('.').last;
 }
 
 class FloatingViewController extends GetxController {
+  FloatingViewController(
+    this.playerData, {
+    @required this.customController,
+    this.screenSize,
+  }) {
+    if (screenSize?.width == null) {
+      screenSize = Size(MediaQuery.of(Get.context).size.width,
+          MediaQuery.of(Get.context).size.height);
+    }
+    initialHeight = screenSize.width / (16 / 9);
+    anchoringPosition.listen((x) {
+      debugPrint('anchoringPosition changed $x');
+    });
+    ever(anchoringPosition, (f) {
+      isMaximized(anchoringPosition.value == AnchoringPosition.maximized);
+      isFullScreen(anchoringPosition.value == AnchoringPosition.fullScreen);
+      controllersCanBeVisible(!dragging.value &&
+          anchoringPosition.value != AnchoringPosition.minimized);
+      canMinimize(isMaximized.value);
+      canClose(!isFullScreen.value);
+      removeOverlay();
+    });
+    ever(playerSettings.isConnected, (f) async {
+      final newState = playerSettings.isConnected.value
+          ? PlayerState.casting
+          : PlayerState.normal;
+      if (newState != playerState) {
+        playerState = newState;
+        update();
+
+        await videoPlayerController?.pause();
+      }
+    });
+    ever(dragging, (f) {
+      controllersCanBeVisible(!dragging.value &&
+          anchoringPosition.value != AnchoringPosition.minimized);
+      if (dragging.value) {
+        controlsIsShowing(false);
+      }
+      removeOverlay();
+    });
+    ever(isUsingController, (f) {
+      if (isUsingController.value) {
+        controllerTimer?.cancel();
+      } else {
+        _startToggleOffTimer();
+      }
+    });
+  }
+
   final Duration toggleOffDuration = const Duration(seconds: 5);
   VideoPlayerController videoPlayerController;
   var controlsIsShowing = false.obs;
@@ -171,52 +223,19 @@ class FloatingViewController extends GetxController {
   WidgetBuilder customControllers;
   PlayerData _playerData;
   final PlayerData playerData;
+  bool _isLocal = false;
+  bool get isPlayingLocally => _isLocal;
 
   @override
-  onInit() {
+  void onInit() {
     anchoringPosition.value = AnchoringPosition.maximized;
     dragging.value = false;
     super.onInit();
   }
 
-  FloatingViewController(this.playerData,
-      {this.screenSize, @required this.customController}) {
-    if (screenSize?.width == null) {
-      screenSize = Size(MediaQuery.of(Get.context).size.width,
-          MediaQuery.of(Get.context).size.height);
-    }
-    initialHeight = screenSize.width / (16 / 9);
-    anchoringPosition.listen((x) {
-      print('anchoringPosition changed $x');
-    });
-    ever(anchoringPosition, (f) {
-      isMaximized(anchoringPosition.value == AnchoringPosition.maximized);
-      isFullScreen(anchoringPosition.value == AnchoringPosition.fullScreen);
-      controllersCanBeVisible(!dragging.value &&
-          anchoringPosition.value != AnchoringPosition.minimized);
-      canMinimize(isMaximized.value);
-      canClose(!isFullScreen.value);
-      removeOverlay();
-    });
-
-    ever(dragging, (f) {
-      controllersCanBeVisible(!dragging.value &&
-          anchoringPosition.value != AnchoringPosition.minimized);
-      if (dragging.value) {
-        controlsIsShowing(false);
-      }
-      removeOverlay();
-    });
-    ever(isUsingController, (f) {
-      if (isUsingController.value) {
-        controllerTimer?.cancel();
-      } else {
-        _startToggleOffTimer();
-      }
-    });
-  }
   void changeAnchor(AnchoringPosition _anchoringPosition, String tag) {
     debugPrint(
+        // ignore: lines_longer_than_80_chars
         'changeAnchor old ${anchoringPosition.value} => $_anchoringPosition $tag');
     controlsIsShowing(false);
     anchoringPosition.value = _anchoringPosition;
@@ -238,12 +257,13 @@ class FloatingViewController extends GetxController {
   Future<void> createController() async {
     try {
       _playerData = playerData;
-      var videoRes = (playerData.videoRes == null || playerData.useMockData)
+      final videoRes = (playerData.videoRes == null || playerData.useMockData)
           ? {'BigBunny': MockData.mp4Bunny, 'Other': MockData.shortMovie}
           : playerData.videoRes;
-      var subtitleLink = (playerData.subtitle == null || playerData.useMockData)
-          ? MockData.srt
-          : playerData.subtitle;
+      final subtitleLink =
+          (playerData.subtitle == null || playerData.useMockData)
+              ? MockData.srt
+              : playerData.subtitle;
       playerSettingsController.initVideoResolutions(videoRes);
       await setNewVideo();
       await playerSettingsController.initSubtitles(subtitleLink: subtitleLink);
@@ -259,16 +279,18 @@ class FloatingViewController extends GetxController {
   Future<void> setNewVideo() async {
     playerState = PlayerState.normal;
     final filePath = playerSettingsController.getVideo();
-    bool isLocal = !filePath.startsWith('http');
-    debugPrint('setNewVideo $filePath => isLocal? $isLocal');
-    if (isLocal) {
-      videoPlayerController = VideoPlayerController.file(File(filePath))
-        ..setLooping(true)
-        ..initialize().then((_) => videoPlayerController.play());
+    _isLocal = !filePath.startsWith('http');
+    debugPrint('setNewVideo $filePath => isLocal? $_isLocal');
+    if (_isLocal) {
+      videoPlayerController = VideoPlayerController.file(File(filePath));
+      await videoPlayerController
+          .initialize()
+          .then((_) => videoPlayerController.play());
     } else {
-      videoPlayerController = VideoPlayerController.network(filePath)
-        ..setLooping(true)
-        ..initialize().then((_) => videoPlayerController.play());
+      videoPlayerController = VideoPlayerController.network(filePath);
+      await videoPlayerController
+          .initialize()
+          .then((_) => videoPlayerController.play());
     }
 
     videoPlayerController.addListener(() async {
@@ -299,11 +321,10 @@ class FloatingViewController extends GetxController {
   }
 
   @override
-  void onClose() async {
+  void onClose() {
     playerDispose();
     removeOverlay();
     _stopSavePositionTimer();
-    // videoPlayerController.stopRendererScanning();
     videoPlayerController?.dispose();
     super.onClose();
   }
@@ -340,32 +361,33 @@ class FloatingViewController extends GetxController {
     update();
   }
 
-  showOverlay(BuildContext context, WidgetBuilder w) {
+  void showOverlay(BuildContext context, WidgetBuilder w) {
     _overlayEntry?.remove();
     _overlayEntry = OverlayEntry(builder: (context) => w(context));
     Overlay.of(context).insert(_overlayEntry);
-    print('overlay is showing');
+    debugPrint('overlay is showing');
   }
 
   DateTime overlayRemoveTimeStamp;
-  removeOverlay() {
+  void removeOverlay() {
     if (_overlayEntry != null) {
       overlayRemoveTimeStamp = DateTime.now();
       _overlayEntry?.remove();
       _overlayEntry = null;
-      print('overlay removed');
+      debugPrint('overlay removed');
     }
   }
 
   @override
   String toString() {
+    // ignore: lines_longer_than_80_chars
     return 'FloatingViewController{toggleOffDuration: $toggleOffDuration, videoPlayerController: $videoPlayerController, controlsIsShowing: $controlsIsShowing, detailsTopPadding: $detailsTopPadding, screenSize: $screenSize, initialHeight: $initialHeight, controllerTimer: $controllerTimer, anchoringPosition: $anchoringPosition, isFullScreen: $isFullScreen, isMaximized: $isMaximized, dragging: $dragging, controllersCanBeVisible: $controllersCanBeVisible, canMinimize: $canMinimize, canClose: $canClose}';
   }
 
   bool overlayJustRemoved() {
     return _overlayEntry != null ||
         (overlayRemoveTimeStamp
-                ?.add(Duration(seconds: 1))
+                ?.add(const Duration(seconds: 1))
                 ?.isAfter(DateTime.now()) ??
             false);
   }
@@ -383,7 +405,7 @@ class FloatingViewController extends GetxController {
       final totalDuration = videoPlayerController?.value?.duration?.inSeconds;
 
       if (currentPos == null || totalDuration == null) {
-        print('Position was null');
+        debugPrint('Position was null');
         return;
       }
       _playerData?.savePosition(SavePosition(
@@ -391,9 +413,9 @@ class FloatingViewController extends GetxController {
           videoItem: _playerData.videoItem,
           totalSeconds: totalDuration,
           itemId: _playerData.itemId));
-      print('Position sent to save from player');
+      debugPrint('Position sent to save from player');
     } catch (e) {
-      print(e);
+      debugPrint(e);
     }
   }
 
@@ -418,7 +440,7 @@ class FloatingViewController extends GetxController {
     if (savePositionTimer != null) {
       return;
     }
-    savePositionTimer = Timer.periodic(Duration(minutes: 1), (timer) {
+    savePositionTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
       savePosition();
     });
   }
@@ -426,5 +448,20 @@ class FloatingViewController extends GetxController {
   void resetControllerTimer() {
     controllerTimer?.cancel();
     _startToggleOffTimer();
+  }
+
+  final playerSettings = Get.find<PlayerSettings>();
+  void startCasting(CastDevice device) {
+    playerSettings.cast(device, _castMessage());
+  }
+
+  Map<String, dynamic> _castMessage() {
+    return playerData.castMessage(
+        videoLink: playerSettingsController.getVideo(),
+        position: videoPlayerController.value.position);
+  }
+
+  void disconnectCasting() {
+    playerSettings.disconnect();
   }
 }

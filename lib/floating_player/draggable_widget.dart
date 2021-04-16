@@ -7,84 +7,23 @@ import 'package:get/get.dart';
 enum AnchoringPosition { minimized, maximized, fullScreen }
 
 class DeleteIconConfig {
+  const DeleteIconConfig(
+      {this.maxSize = 50,
+      this.minSize = 30,
+      this.iconColor = Colors.white,
+      this.backgroundColor = Colors.black54,
+      this.icon = Icons.close});
   final double maxSize;
   final double minSize;
   final Color iconColor;
   final Color backgroundColor;
   final IconData icon;
-  const DeleteIconConfig(
-      {this.maxSize: 50,
-      this.minSize: 30,
-      this.iconColor: Colors.white,
-      this.backgroundColor: Colors.black54,
-      this.icon: Icons.close});
 }
 
 class DraggableWidget extends StatefulWidget {
-  final double initialHeight;
-  final Function onRemove;
-  final Duration animatedViewsDuration;
-  final DeleteIconConfig deleteIconConfig;
-
-  /// The widget that will be displayed as dragging widget
-  final Widget child;
-
-  /// The horizontal padding around the widget
-  final double horizontalSapce;
-
-  /// The vertical padding around the widget
-  final double verticalSpace;
-
-  /// Intial location of the widget, default to [AnchoringPosition.bottomRight]
-  final AnchoringPosition initialPosition;
-
-  /// Intially should the widget be visible or not, default to [true]
-  final bool intialVisibility;
-
-  /// The top bottom pargin to create the bottom boundary for the widget, for example if you have a [BottomNavigationBar],
-  /// then you may need to set the bottom boundary so that the draggable button can't get on top of the [BottomNavigationBar]
-  final double bottomMargin;
-
-  final bool topSafeMargin;
-
-  /// Status bar's height, default to 24
-  final double statusBarHeight;
-
-  /// Shadow's border radius for the draggable widget, default to 10
-  final double shadowBorderRadius;
-
-  /// A drag controller to show/hide or move the widget around the screen
-  final DragController dragController;
-
-  /// [BoxShadow] when the widget is not being dragged, default to
-  /// ```Dart
-  ///const BoxShadow(
-  ///     color: Colors.black38,
-  ///    offset: Offset(0, 4),
-  ///    blurRadius: 2,
-  ///  ),
-  /// ```
-  final BoxShadow normalShadow;
-
-  /// [BoxShadow] when the widget is being dragged
-  ///```Dart
-  ///const BoxShadow(
-  ///     color: Colors.black38,
-  ///    offset: Offset(0, 10),
-  ///    blurRadius: 10,
-  ///  ),
-  /// ```
-  final BoxShadow draggingShadow;
-
-  /// How much should the [DraggableWidget] be scaled when it is being dragged, default to 1.1
-  final double dragAnimationScale;
-
-  /// Touch Delay Duration. Default value is zero. When set, drag operations will trigger after the duration.
-  final Duration touchDelay;
   DraggableWidget({
-    Key key,
-    this.child,
-    this.initialHeight: 202,
+    @required this.child,
+    this.initialHeight = 202,
     this.horizontalSapce = 0,
     this.animatedViewsDuration = const Duration(milliseconds: 150),
     this.deleteIconConfig = const DeleteIconConfig(),
@@ -119,16 +58,83 @@ class DraggableWidget extends StatefulWidget {
         assert(bottomMargin >= 0 && bottomMargin != null),
         assert(intialVisibility != null),
         assert(child != null);
+  final double initialHeight;
+  final Function onRemove;
+  final Duration animatedViewsDuration;
+  final DeleteIconConfig deleteIconConfig;
+
+  /// The widget that will be displayed as dragging widget
+  final Widget child;
+
+  /// The horizontal padding around the widget
+  final double horizontalSapce;
+
+  /// The vertical padding around the widget
+  final double verticalSpace;
+
+  // ignore: comment_references
+  /// Intial location of the widget, default to [AnchoringPosition.bottomRight]
+  final AnchoringPosition initialPosition;
+
+  // ignore: comment_references
+  /// Intially should the widget be visible or not, default to [true]
+  final bool intialVisibility;
+
+  // ignore: lines_longer_than_80_chars
+  /// The top bottom pargin to create the bottom boundary for the widget, for example if you have a [BottomNavigationBar],
+  // ignore: lines_longer_than_80_chars
+  /// then you may need to set the bottom boundary so that the draggable button can't get on top of the [BottomNavigationBar]
+  final double bottomMargin;
+
+  final bool topSafeMargin;
+
+  /// Status bar's height, default to 24
+  final double statusBarHeight;
+
+  /// Shadow's border radius for the draggable widget, default to 10
+  final double shadowBorderRadius;
+
+  /// A drag controller to show/hide or move the widget around the screen
+  final DragController dragController;
+
+  /// [BoxShadow] when the widget is not being dragged, default to
+  /// ```Dart
+  ///const BoxShadow(
+  ///     color: Colors.black38,
+  ///    offset: Offset(0, 4),
+  ///    blurRadius: 2,
+  ///  ),
+  /// ```
+  final BoxShadow normalShadow;
+
+  /// [BoxShadow] when the widget is being dragged
+  ///```Dart
+  ///const BoxShadow(
+  ///     color: Colors.black38,
+  ///    offset: Offset(0, 10),
+  ///    blurRadius: 10,
+  ///  ),
+  /// ```
+  final BoxShadow draggingShadow;
+
+  // ignore: lines_longer_than_80_chars
+  /// How much should the [DraggableWidget] be scaled when it is being dragged, default to 1.1
+  final double dragAnimationScale;
+
+  // ignore: lines_longer_than_80_chars
+  /// Touch Delay Duration. Default value is zero. When set, drag operations will trigger after the duration.
+  final Duration touchDelay;
+
   @override
   _DraggableWidgetState createState() => _DraggableWidgetState();
 }
 
 class _DraggableWidgetState extends State<DraggableWidget>
     with TickerProviderStateMixin {
-  FloatingViewController _floatingViewController = Get.find();
+  final FloatingViewController _floatingViewController = Get.find();
   final playerKey = GlobalKey();
   final deleteAreaKey = GlobalKey();
-  bool _isAboutToDelete = false;
+  final bool _isAboutToDelete = false;
   double top = 0, left = 0;
   double boundary = 0;
   AnimationController animationController;
@@ -187,7 +193,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
     widget.dragController?._addState(this);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await Future<void>.delayed(Duration(
+      await Future<void>.delayed(const Duration(
         milliseconds: 100,
       ));
       setState(() {
@@ -204,7 +210,8 @@ class _DraggableWidgetState extends State<DraggableWidget>
     });
     _floatingViewController.setPlayerHeight(hardTop + getPlayerHeight());
     _floatingViewController.anchoringPosition.listen((x) {
-      print(
+      debugPrint(
+          // ignore: lines_longer_than_80_chars
           'draggable listener $x --- $mounted -- maximi => ${_floatingViewController.isMaximized.value} - drag => ${_floatingViewController.dragging.value}');
       if (mounted) {
         _animateTo(x);
@@ -228,12 +235,12 @@ class _DraggableWidgetState extends State<DraggableWidget>
 
   @override
   Widget build(BuildContext context) {
-    var currentPosY = top - topMargin;
-    var res = currentPosY / (boundary - widget.initialHeight);
-    var percentage = max(0.4, 1.0 - res);
-    print(
+    final currentPosY = top - topMargin;
+    final res = currentPosY / (boundary - widget.initialHeight);
+    final percentage = max(0.4, 1.0 - res);
+    debugPrint(
         'getSize  ${Get.width} || ${MediaQuery.of(context).size.width}  $currentPosY ($top - ${widget.statusBarHeight}) / ($boundary - ${widget.initialHeight}) = $res => $percentage');
-    print(
+    debugPrint(
         '($currentPosY / ${(boundary - widget.initialHeight)}) = $res => $percentage');
     return Stack(
       children: [
@@ -273,7 +280,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
                       // final p = Offset(left, top);
                       // debugPrint(
                       //     'onVerticalDragEnd  anchorPos: ${currentlyDocked} ==== ${top} - ${lastCaseYPos} = ${top - lastCaseYPos} > ${Get.height / 5}');
-                      bool switchPos =
+                      final bool switchPos =
                           v.velocity.pixelsPerSecond.dy.abs() > 3000.0 ||
                               (top - lastCaseYPos).abs() >
                                   MediaQuery.of(context).size.height / 5;
@@ -284,8 +291,9 @@ class _DraggableWidgetState extends State<DraggableWidget>
                         if (animationController.isAnimating) {
                           animationController.stop();
                         }
-                        animationController.reset();
-                        animationController.forward();
+                        animationController
+                          ..reset()
+                          ..forward();
                       }
                       // debugPrint(
                       //     'onVerticalDragEnd $switchPos / Velocity:${v.primaryVelocity} = ${v.velocity.pixelsPerSecond.dy} : dir:${v.velocity.pixelsPerSecond.distanceSquared} / anchorPos: ${_floatingViewController.anchoringPosition.value}');
@@ -298,11 +306,12 @@ class _DraggableWidgetState extends State<DraggableWidget>
                       _floatingViewController.dragging(true);
 
                       if (animationController.isAnimating) {
-                        animationController.stop();
-                        animationController.reset();
+                        animationController
+                          ..stop()
+                          ..reset();
                       }
                       setState(() {
-                        var pos = v.globalPosition.dy - (widgetHeight) / 2;
+                        final pos = v.globalPosition.dy - (widgetHeight) / 2;
                         if (pos < (boundary - (widget.initialHeight)) &&
                             v.globalPosition.dy > topMargin) {
                           top = max(pos, topMargin);
@@ -395,7 +404,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
                                                     const EdgeInsets.all(20),
                                                 child: Text(
                                                   'Close'.tr,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                       color: Colors.white),
                                                 ),
                                               ),
@@ -455,10 +464,11 @@ class _DraggableWidgetState extends State<DraggableWidget>
 
     switch (docker) {
       case AnchoringPosition.minimized:
-        double remaingDistanceX = (totalWidth - widgetWidth - hardLeft);
-        double remaingDistanceY = (totalHeight - widgetHeight - hardTop);
+        final double remaingDistanceX = (totalWidth - widgetWidth - hardLeft);
+        final double remaingDistanceY = (totalHeight - widgetHeight - hardTop);
         final noNeedToChange = remaingDistanceY < 5;
         debugPrint(
+            // ignore: lines_longer_than_80_chars
             'animateWidget 1st $remaingDistanceX &  currently => $remaingDistanceY $noNeedToChange $tag');
         // if (noNeedToChange) {
         //   return;
@@ -516,16 +526,16 @@ class _DraggableWidgetState extends State<DraggableWidget>
     return Offset(left, top);
   }
 
-  Rect getDeleteReact() {
-    return deleteAreaKey.globalPaintBounds;
-  }
+  // Rect getDeleteReact() {
+  //   return deleteAreaKey.globalPaintBounds;
+  // }
 
-  bool isInsideDeleteRect() {
-    var x = getDeleteReact();
-    var playerRect = getPlayerRect();
-    var size = x.intersect(playerRect).size;
-    return !size.isEmpty;
-  }
+  // bool isInsideDeleteRect() {
+  //   final x = getDeleteReact();
+  //   final playerRect = getPlayerRect();
+  //   final size = x.intersect(playerRect).size;
+  //   return !size.isEmpty;
+  // }
 
   Rect getPlayerRect() {
     return playerKey.globalPaintBounds.deflate(40) ?? Rect.zero;
@@ -538,7 +548,7 @@ class DragController {
     this._widgetState = _widgetState;
   }
 
-  /// Jump to any [AnchoringPosition] programatically
+  /// Jump to any [AnchoringPosition] programmatically
   void jumpTo(AnchoringPosition anchoringPosition) {
     _widgetState._animateTo(anchoringPosition);
   }
@@ -562,7 +572,7 @@ class DragController {
 extension GlobalKeyExtension on GlobalKey {
   Rect get globalPaintBounds {
     final renderObject = currentContext?.findRenderObject();
-    var translation = renderObject?.getTransformTo(null)?.getTranslation();
+    final translation = renderObject?.getTransformTo(null)?.getTranslation();
     if (translation != null && renderObject.paintBounds != null) {
       return renderObject.paintBounds
           .shift(Offset(translation.x, translation.y));
@@ -573,6 +583,6 @@ extension GlobalKeyExtension on GlobalKey {
 }
 
 double getValueFromPercentage(double min, double max, double percentage) {
-  double diff = max - min;
+  final double diff = max - min;
   return (percentage * diff) + min;
 }

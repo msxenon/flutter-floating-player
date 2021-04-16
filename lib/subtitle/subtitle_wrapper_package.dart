@@ -10,17 +10,16 @@ import 'data/models/style/subtitle_style.dart';
 import 'data/repository/subtitle_repository.dart';
 
 class SubTitleWrapper extends StatelessWidget {
-  final SubtitleController subtitleController;
-  final FloatingViewController controller;
-  final SubtitleStyle subtitleStyle;
-
   SubTitleWrapper({
-    Key key,
     @required this.subtitleController,
     @required this.controller,
+    Key key,
     this.subtitleStyle =
         const SubtitleStyle(position: SubtitlePosition(bottom: 0)),
   }) : super(key: key);
+  final SubtitleController subtitleController;
+  final FloatingViewController controller;
+  final SubtitleStyle subtitleStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -49,10 +48,10 @@ class SubTitleWrapper extends StatelessWidget {
                       ? SubtitleTextView(
                           subtitleStyle: subtitleStyle,
                         )
-                      : SizedBox.shrink(),
+                      : const SizedBox.shrink(),
                 ),
               )
-            : SizedBox.shrink()
+            : const SizedBox.shrink()
       ],
     );
   }

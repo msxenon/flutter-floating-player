@@ -3,6 +3,13 @@ import 'package:flutter/material.dart';
 import 'bloc/subtitle/subtitle_bloc.dart';
 
 class SubtitleController {
+  SubtitleController({
+    this.subtitleUrl,
+    this.subtitlesContent,
+    this.showSubtitles = true,
+    this.subtitleDecoder,
+    this.subtitleType = SubtitleType.webvtt,
+  });
   String subtitlesContent;
   String subtitleUrl;
   final bool showSubtitles;
@@ -11,14 +18,6 @@ class SubtitleController {
   //
   bool _attached = false;
   SubtitleBloc _subtitleBloc;
-
-  SubtitleController({
-    this.subtitleUrl,
-    this.subtitlesContent,
-    this.showSubtitles = true,
-    this.subtitleDecoder,
-    this.subtitleType = SubtitleType.webvtt,
-  });
 
   void attach(SubtitleBloc subtitleBloc) {
     if (subtitleBloc != null) {
@@ -43,7 +42,7 @@ class SubtitleController {
         ),
       );
     } else {
-      print('Seems that the controller is not correctly attached.');
+      debugPrint('Seems that the controller is not correctly attached.');
     }
   }
 
@@ -58,7 +57,7 @@ class SubtitleController {
         ),
       );
     } else {
-      print('Seems that the controller is not correctly attached.');
+      debugPrint('Seems that the controller is not correctly attached.');
     }
   }
 }

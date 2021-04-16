@@ -15,13 +15,12 @@ typedef OverlayControllerData = Widget Function(
     @required VideoPlayerController controller});
 
 class VlcPlayerWithControls extends StatefulWidget {
-  final FloatingViewController controller;
-
   VlcPlayerWithControls({
-    Key key,
     @required this.controller,
+    Key key,
   })  : assert(controller != null, 'You must provide a vlc controller'),
         super(key: key);
+  final FloatingViewController controller;
 
   @override
   VlcPlayerWithControlsState createState() => VlcPlayerWithControlsState();
@@ -57,12 +56,12 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
     if (!mounted) return;
     //
     if (widget.controller.videoPlayerController.value.initialized) {
-      var oPosition = widget.controller.videoPlayerController.value.position;
-      var oDuration = widget.controller.videoPlayerController.value.duration;
+      final oPosition = widget.controller.videoPlayerController.value.position;
+      final oDuration = widget.controller.videoPlayerController.value.duration;
       if (oPosition != null && oDuration != null) {
         if (oDuration.inHours == 0) {
-          var strPosition = oPosition.toString().split('.')[0];
-          var strDuration = oDuration.toString().split('.')[0];
+          final strPosition = oPosition.toString().split('.')[0];
+          final String strDuration = oDuration.toString().split('.')[0];
           position =
               "${strPosition.split(':')[1]}:${strPosition.split(':')[2]}";
           duration =
@@ -112,7 +111,7 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
     );
   }
 
-  setSliderValue(double newSliderValue) {
+  void setSliderValue(double newSliderValue) {
     // if (widget.controller.videoPlayerController.value.isEnded) {
     //   sliderValue = widget
     //       .controller.videoPlayerController.value.duration.inSeconds
@@ -123,7 +122,7 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
   }
 }
 
-showFloatingBottomSheet(BuildContext context,
+void showFloatingBottomSheet(BuildContext context,
     FloatingViewController floatingViewController, List<Widget> list) {
   floatingViewController.showOverlay(context, (context) {
     return Positioned.fill(
@@ -131,7 +130,7 @@ showFloatingBottomSheet(BuildContext context,
         behavior: HitTestBehavior.opaque,
         onTap: () => floatingViewController.removeOverlay(),
         child: Container(
-          constraints: BoxConstraints.expand(),
+          constraints: const BoxConstraints.expand(),
           color: Colors.black.withOpacity(0.3),
           child: Stack(
             children: [
@@ -198,7 +197,7 @@ showFloatingBottomSheet(BuildContext context,
                                     floatingViewController,
                                     List.generate(TextSizes.values.length,
                                         (index) {
-                                      var key = TextSizes.values[index];
+                                      final key = TextSizes.values[index];
                                       return FloatingSheetListTile(
                                         floatingViewController:
                                             floatingViewController,
@@ -235,7 +234,7 @@ showFloatingBottomSheet(BuildContext context,
                                             .playerSettingsController
                                             .videoResolutions
                                             .length, (index) {
-                                      var key = floatingViewController
+                                      final key = floatingViewController
                                           .playerSettingsController
                                           .videoResolutions
                                           .keys
@@ -282,21 +281,22 @@ showFloatingBottomSheet(BuildContext context,
 
 //todo
 class FloatingSheetListTile extends StatelessWidget {
+  const FloatingSheetListTile(
+      {@required this.title,
+      @required this.floatingViewController,
+      this.onTap,
+      this.selected,
+      this.titleStatus,
+      Key key,
+      this.icon})
+      : super(key: key);
   final FloatingViewController floatingViewController;
   final Function onTap;
   final String title;
   final String titleStatus;
   final bool selected;
   final IconData icon;
-  const FloatingSheetListTile(
-      {Key key,
-      @required this.floatingViewController,
-      this.onTap,
-      this.selected,
-      @required this.title,
-      this.titleStatus,
-      this.icon})
-      : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -340,9 +340,13 @@ class FloatingSheetListTile extends StatelessWidget {
 }
 
 class FloatingBottomSheet extends StatefulWidget {
+  FloatingBottomSheet({
+    @required this.children,
+    Key key,
+  }) : super(key: key);
+
   final List<Widget> children;
 
-  FloatingBottomSheet({Key key, @required this.children}) : super(key: key);
   final FloatingViewController floatingViewController = Get.find();
   @override
   _FloatingBottomSheetState createState() {
@@ -356,7 +360,7 @@ class _FloatingBottomSheetState extends State<FloatingBottomSheet>
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
       setState(() {
         show = true;
       });
@@ -372,7 +376,7 @@ class _FloatingBottomSheetState extends State<FloatingBottomSheet>
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 100),
       alignment: Alignment.topLeft,
       width: MediaQuery.of(Get.context).size.width,
       height: show
