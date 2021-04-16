@@ -33,8 +33,7 @@ class MyApp extends StatelessWidget {
               visualDensity: VisualDensity.standard,
             ),
             onInit: () {
-              Get.put(PlayerSettings(
-                  'CC1AD845')); //is default https://developers.google.com/android/reference/com/google/android/gms/cast/CastMediaControlIntent#public-static-final-string-default_media_receiver_application_id
+              Get.put(PlayerCastSettings());
             },
             home: MyHomePage(),
             popGesture: false,
