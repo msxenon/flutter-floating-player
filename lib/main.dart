@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
+import 'package:flutter_player/player_init.dart';
 import 'package:get/get.dart';
 import 'package:overlay_support/overlay_support.dart';
 
@@ -30,6 +31,10 @@ class MyApp extends StatelessWidget {
               primarySwatch: Colors.blue,
               visualDensity: VisualDensity.standard,
             ),
+            onInit: () {
+              Get.put(PlayerSettings(
+                  'CC1AD845')); //is default https://developers.google.com/android/reference/com/google/android/gms/cast/CastMediaControlIntent#public-static-final-string-default_media_receiver_application_id
+            },
             home: MyHomePage(),
             popGesture: false,
           ),

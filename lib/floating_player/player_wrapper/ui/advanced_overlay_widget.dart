@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
+import 'package:flutter_player/player_init.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 
@@ -78,12 +79,38 @@ class AdvancedOverlayWidget extends StatelessWidget {
                     ),
                     Align(
                       alignment: AlignmentDirectional.topEnd,
-                      child: IconButton(
-                        onPressed: () =>
-                            showFloatingBottomSheet(context, controller, null),
-                        color: Colors.white,
-                        iconSize: iconSize,
-                        icon: Icon(Icons.menu),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CastIcon(
+                            onTap: (f) {
+                              f.forEach((element) {
+                                print(
+                                    '${element.name} ${element.serviceName} ${element.host} ${element.port}');
+                              });
+                              showFloatingBottomSheet(
+                                context,
+                                controller,
+                                List.generate(f.length, (index) {
+                                  final e = f[index];
+                                  return ListTile(
+                                    title: Text(e.name),
+                                    onTap: () {
+                                      Get.find<PlayerSettings>().cast(e);
+                                    },
+                                  );
+                                }),
+                              );
+                            },
+                          ),
+                          IconButton(
+                            onPressed: () => showFloatingBottomSheet(
+                                context, controller, null),
+                            color: Colors.white,
+                            iconSize: iconSize,
+                            icon: Icon(Icons.menu),
+                          ),
+                        ],
                       ),
                     ),
                     if (controller.canMinimize.value)
