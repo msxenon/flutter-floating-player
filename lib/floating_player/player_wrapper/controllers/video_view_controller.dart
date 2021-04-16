@@ -450,7 +450,7 @@ class FloatingViewController extends GetxController {
     _startToggleOffTimer();
   }
 
-  final playerSettings = Get.find<PlayerSettings>();
+  final playerSettings = Get.find<PlayerCastSettings>();
   void startCasting(CastDevice device) {
     playerSettings.cast(device, _castMessage());
   }
