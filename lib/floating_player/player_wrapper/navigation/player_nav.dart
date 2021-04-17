@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/floating_view_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/player_data.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/player_state_enum.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/floating_player.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:get/get.dart';
 import 'package:overlay_support/overlay_support.dart';
-
-import '../controllers/video_view_controller.dart';
 
 class PLayerNav {
   static OverlaySupportEntry overlayEntry;
@@ -45,21 +45,18 @@ class PLayerNav {
   }
 
   ///returns false if overlay just dismissed
-  static bool clearViews(String tag,
-      {bool forceClear = false, bool justMinimize = true}) {
+  static Future<bool> clearViews(String tag,
+      {bool forceClear = false, bool justMinimize = true}) async {
     try {
       //print('clearView called $forceClear ${overlayEntry != null} $tag');
+      final currentRoute = Get.currentRoute;
+      bool hasPLayerOpen = false;
       if (overlayEntry != null) {
+        hasPLayerOpen = true;
         final controller = Get.find<FloatingViewController>();
 
-        void forceClearVoid() {
-          overlayEntry.dismiss(animate: false);
-          overlayEntry = null;
-          _lastOverlayId = null;
-        }
-
         if (forceClear || controller.playerState == PlayerState.error) {
-          forceClearVoid();
+          await _closePlayer();
           return false;
         }
         if (controller.isFullScreen.value) {
@@ -69,16 +66,30 @@ class PLayerNav {
             !controller.overlayJustRemoved()) {
           controller.minimize();
           return false;
-        }
+        } else if (currentRoute == '/') {}
       }
-    } catch (e) {
-      // print(e);
+      debugPrint(
+          // ignore: lines_longer_than_80_chars
+          'PLayer BackAction Interceptor $currentRoute isPLayerOverlay $hasPLayerOpen $tag');
+    } catch (e, s) {
+      // ignore: prefer_interpolation_to_compose_strings
+      debugPrint(
+          // ignore: prefer_interpolation_to_compose_strings
+          e +
+              s.toString() +
+              ' ========================================== $tag');
     }
     return true;
   }
 
-  static bool canPopup() {
-    return clearViews('canPopup');
+  static Future<void> _closePlayer() async {
+    overlayEntry?.dismiss(animate: false);
+    overlayEntry = null;
+    _lastOverlayId = null;
+    final controller = Get.find<FloatingViewController>();
+    await controller?.disposePlayerRelatedControllers();
+
+    return;
   }
 
   static Future<void> _removeOverlayIfExist(Color bgColor) async {
@@ -95,10 +106,8 @@ class PLayerNav {
         );
       }, duration: const Duration(milliseconds: 150));
     }
-    overlayEntry.dismiss(animate: false);
-    overlayEntry = null;
-    _lastOverlayId = null;
-    await Future.delayed(const Duration(milliseconds: 100));
+    await _closePlayer();
+    await Future.delayed(const Duration(milliseconds: 50));
     return;
   }
 }

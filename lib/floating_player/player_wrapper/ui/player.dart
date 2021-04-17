@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/floating_view_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/player_state_enum.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:get/get.dart';
 
@@ -36,7 +37,7 @@ class _PlayerState extends State<Player> {
   Widget build(BuildContext context) {
     return GetBuilder<FloatingViewController>(
         init: widget.floatingViewController,
-        tag: widget.tag,
+        // tag: widget.tag,
         key: Key(widget.tag),
         builder: (model) {
           if (model.playerState == PlayerState.error) {

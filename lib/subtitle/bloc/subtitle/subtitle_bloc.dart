@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/floating_view_controller.dart';
 import 'package:flutter_player/subtitle/data/models/subtitle.dart';
 import 'package:flutter_player/subtitle/data/models/subtitles.dart';
 import 'package:flutter_player/subtitle/data/repository/subtitle_repository.dart';

@@ -5,143 +5,18 @@ import 'package:auto_orientation/auto_orientation.dart';
 import 'package:cast/cast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/player_data.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/player_settings_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/player_state_enum.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/save_position.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:flutter_player/player_init.dart';
-import 'package:flutter_player/subtitle/subtitle_controller.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
 
 import '../../draggable_widget.dart';
 import '../mock_data.dart';
-
-enum TextSizes { normal, medium, large, xlarge }
-enum PlayerState { normal, error, casting }
-
-class PlayerSettingsController extends GetxController {
-  SubtitleController subtitleController;
-  DateTime dateTime;
-  String link;
-  bool isEnabled = false;
-  Map<String, String> videoResolutions = {};
-  String selectedRes;
-  TextSizes textEnum = TextSizes.normal;
-  static const double _defaultTextSize = 1;
-  Function(Duration, dynamic videoItem, String itemId) onDisposeListener;
-  double getTextSize(bool isFullScreen) {
-    double result = _defaultTextSize;
-    switch (textEnum) {
-      case TextSizes.normal:
-        result = 1;
-        break;
-      case TextSizes.medium:
-        result = 1.5;
-        break;
-      case TextSizes.large:
-        result = isFullScreen ? 3 : 1.6;
-        break;
-      case TextSizes.xlarge:
-        result = isFullScreen ? 4 : 1.8;
-        break;
-    }
-    return result;
-  }
-
-  void setTextSize(TextSizes _textSize) {
-    textEnum = _textSize;
-    update();
-  }
-
-  void initVideoResolutions(Map<String, String> res) {
-    videoResolutions = res;
-    if (selectedRes == null || !videoResolutions.containsKey(selectedRes)) {
-      selectedRes = videoResolutions.keys.first;
-    }
-  }
-
-  void changeVideoRes(String name) {
-    if (name == selectedRes) {
-      return;
-    }
-    selectedRes = name;
-    Get.find<FloatingViewController>().setNewVideo();
-    debugPrint('video set $name ${getVideo()}');
-    update();
-  }
-
-  String getVideo() {
-    return videoResolutions[selectedRes];
-  }
-
-  Future<void> initSubtitles({String subtitleLink}) async {
-    link = subtitleLink;
-    return _setSubtitle();
-  }
-
-  String getCaptionStringValue() {
-    if (isEnabled == null) {
-      return 'Unavailable'.tr;
-    } else if (isEnabled) {
-      return 'Arabic'.tr;
-    } else {
-      return 'Off'.tr;
-    }
-  }
-
-  Future<void> _setSubtitle() async {
-    var subtitleLink = link;
-    final subtitleType = SubtitleType.values.firstWhere(
-        (e) => subtitleLink.split('.')?.last == e.getName(),
-        orElse: () => SubtitleType.webvtt);
-    if (subtitleController == null) {
-      isEnabled = link?.isNotEmpty == true;
-    }
-    final isLocal = isEnabled ? !subtitleLink.startsWith('http') : false;
-
-    debugPrint('setSubtitle $subtitleLink => isLocal? $isLocal $subtitleType');
-    String subtitleContent;
-    if (isLocal) {
-      final File file = File(subtitleLink);
-      subtitleLink = null;
-      try {
-        subtitleContent = await file.readAsString();
-      } catch (e) {
-        isEnabled = false;
-        debugPrint(e);
-      }
-    }
-    subtitleController = SubtitleController(
-        subtitleUrl: subtitleLink,
-        subtitleType: subtitleType,
-        subtitlesContent: subtitleContent,
-        subtitleDecoder: SubtitleDecoder.utf8,
-        showSubtitles: isEnabled);
-    return;
-  }
-
-  void toggleSubtitle(bool forceIsEnabled) {
-    debugPrint('toggle subtitle $forceIsEnabled == $isEnabled');
-
-    if (forceIsEnabled == isEnabled) {
-      return;
-    }
-    isEnabled = forceIsEnabled;
-    update();
-
-    debugPrint('toggle subtitle end $isEnabled');
-  }
-
-  @override
-  void onClose() {
-    subtitleController.detach();
-    super.onClose();
-  }
-}
-
-extension SubtitleTypeX on SubtitleType {
-  String getName() => toString().split('.').last;
-}
 
 class FloatingViewController extends GetxController {
   FloatingViewController(
@@ -198,7 +73,7 @@ class FloatingViewController extends GetxController {
   VideoPlayerController videoPlayerController;
   var controlsIsShowing = false.obs;
   PlayerSettingsController playerSettingsController =
-      Get.put(PlayerSettingsController());
+      Get.put(PlayerSettingsController(), permanent: true);
   PlayerState playerState = PlayerState.normal;
   String errorMessage = '';
   bool get showDetails => detailsTopPadding > 0;
@@ -463,5 +338,10 @@ class FloatingViewController extends GetxController {
 
   void disconnectCasting() {
     playerSettings.disconnect();
+  }
+
+  Future<bool> disposePlayerRelatedControllers() async {
+    await Get.delete<PlayerSettingsController>(force: true);
+    return Get.delete<FloatingViewController>(force: true);
   }
 }

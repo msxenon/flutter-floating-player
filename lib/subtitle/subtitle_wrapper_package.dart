@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/floating_view_controller.dart';
 import 'package:flutter_player/subtitle/data/models/style/subtitle_position.dart';
 import 'package:flutter_player/subtitle/subtitle_controller.dart';
 import 'package:flutter_player/subtitle/subtitle_text_view.dart';

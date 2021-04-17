@@ -20,5 +20,3 @@ analyzer:
     - lib/**/*.freezed.dart
     - lib/common/ui/pop_peek/**/*
     - test/_data/**
-    - lib/subtitle/**/**/*
-    - lib/subtitle/**/*

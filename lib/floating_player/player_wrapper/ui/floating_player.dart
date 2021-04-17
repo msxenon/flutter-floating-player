@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_player/floating_player/draggable_widget.dart';
-import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
-import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/floating_view_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/player_data.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:get/get.dart';
@@ -17,14 +17,18 @@ class FloatingWrapper extends StatefulWidget {
       this.bottomMargin = 80,
       this.customControllers,
       Key key})
-      : super(key: key);
+      : controller = Get.put(
+            FloatingViewController(playerData,
+                customController: customControllers),
+            permanent: true),
+        super(key: key);
   final WidgetBuilder details;
   final Color bgColor;
   final Function onRemove;
   final double bottomMargin;
   final OverlayControllerData customControllers;
   final PlayerData playerData;
-
+  final FloatingViewController controller;
   @override
   _FloatingWrapperState createState() => _FloatingWrapperState();
 }
@@ -33,10 +37,8 @@ class _FloatingWrapperState extends State<FloatingWrapper> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<FloatingViewController>(
-        init: FloatingViewController(widget.playerData,
-            customController: widget.customControllers),
-        autoRemove: true,
-        tag: widget.playerData.itemId,
+        init: widget.controller,
+        // tag: widget.playerData.itemId,
         builder: (model) {
           return Material(
             type: MaterialType.transparency,

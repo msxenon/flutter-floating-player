@@ -1,22 +1,5 @@
 import 'package:flutter/cupertino.dart';
-
-class SavePosition<T> {
-  SavePosition(
-      {@required this.seconds,
-      @required this.totalSeconds,
-      @required this.videoItem,
-      @required this.itemId});
-  final int seconds;
-  final T videoItem;
-  final String itemId;
-  final int totalSeconds;
-
-  @override
-  String toString() {
-    // ignore: lines_longer_than_80_chars
-    return 'SavePosition{seconds: $seconds, videoItem: $videoItem, itemId: $itemId, totalSeconds: $totalSeconds}';
-  }
-}
+import 'package:flutter_player/floating_player/player_wrapper/logic/save_position.dart';
 
 typedef SavePosFunc<T> = void Function(SavePosition<T>);
 
@@ -53,7 +36,7 @@ class PlayerData<VI, SI> {
   }
 
   Map<String, dynamic> castMessage({String videoLink, Duration position}) {
-    debugPrint(subtitle + ' subtitle');
+    debugPrint('$subtitle subtitle');
     return CastMedia(
       contentId: videoLink ?? videoRes.values.first,
       contentType: 'video/mp4',
@@ -62,19 +45,6 @@ class PlayerData<VI, SI> {
       streamType: playType == PlayType.video ? 'BUFFERED' : 'LIVE',
       position: position?.inSeconds ?? startPosition?.inSeconds ?? 0,
     ).toChromeCastMap();
-    return {
-      'type': 'LOAD',
-      'autoPlay': true,
-      'currentTime': position?.inSeconds ?? startPosition?.inSeconds ?? 0,
-      'activeTracks': [],
-      'media': {
-        'contentId': videoLink ?? videoRes.values.first,
-        'contentType': 'video/mp4',
-        'images': [],
-        'title': itemTitle,
-        'streamType': playType == PlayType.video ? 'BUFFERED' : 'LIVE'
-      }
-    };
   }
 }
 
@@ -83,18 +53,16 @@ enum PlayType { live, video }
 class CastMedia {
   CastMedia({
     this.contentId,
-    this.title = "",
-    this.subtitle = "",
+    this.title = '',
+    this.subtitle = '',
     this.autoPlay = true,
     this.position = 0,
     this.contentType = 'video/mp4',
-    this.streamType = "BUFFERED",
+    this.streamType = 'BUFFERED',
     this.images,
-    this.subtitlesUrl = "",
+    this.subtitlesUrl = '',
   }) {
-    if (null == images) {
-      images = [];
-    }
+    images ??= [];
   }
   final String contentId;
   String title;
@@ -108,7 +76,7 @@ class CastMedia {
 
   Map<String, dynamic> toChromeCastMap() {
     // If media doesn't have subtitles send without media->Tracks
-    if (subtitlesUrl == "")
+    if (subtitlesUrl == '')
       return {
         'type': 'LOAD',
         'autoPlay': autoPlay,
@@ -120,6 +88,7 @@ class CastMedia {
           'streamType': streamType,
           'textTrackStyle': {
             'edgeType':
+                // ignore: lines_longer_than_80_chars
                 'NONE', // can be: "NONE", "OUTLINE", "DROP_SHADOW", "RAISED", "DEPRESSED"
             'fontScale':
                 1.0, // transforms into "font-size: " + (fontScale*100) +"%"
@@ -127,6 +96,7 @@ class CastMedia {
                 'NORMAL', // can be: "NORMAL", "BOLD", "BOLD_ITALIC", "ITALIC",
             'fontFamily': 'Droid Sans',
             'fontGenericFamily':
+                // ignore: lines_longer_than_80_chars
                 'SANS_SERIF', // can be: "SANS_SERIF", "MONOSPACED_SANS_SERIF", "SERIF", "MONOSPACED_SERIF", "CASUAL", "CURSIVE", "SMALL_CAPITALS",
             'windowColor':
                 '#00000', // see http://dev.w3.org/csswg/css-color/#hex-notation
@@ -155,6 +125,7 @@ class CastMedia {
         'streamType': streamType,
         'textTrackStyle': {
           'edgeType':
+              // ignore: lines_longer_than_80_chars
               'NONE', // can be: "NONE", "OUTLINE", "DROP_SHADOW", "RAISED", "DEPRESSED"
           'fontScale':
               1.0, // transforms into "font-size: " + (fontScale*100) +"%"
@@ -162,6 +133,7 @@ class CastMedia {
               'NORMAL', // can be: "NORMAL", "BOLD", "BOLD_ITALIC", "ITALIC",
           'fontFamily': 'Droid Sans',
           'fontGenericFamily':
+              // ignore: lines_longer_than_80_chars
               'SANS_SERIF', // can be: "SANS_SERIF", "MONOSPACED_SANS_SERIF", "SERIF", "MONOSPACED_SERIF", "CASUAL", "CURSIVE", "SMALL_CAPITALS",
           'windowColor':
               '#00000', // see http://dev.w3.org/csswg/css-color/#hex-notation
@@ -182,6 +154,7 @@ class CastMedia {
             'type':
                 'TEXT', // Default Media Receiver currently only supports TEXT
             'trackContentId':
+                // ignore: lines_longer_than_80_chars
                 subtitlesUrl, // the URL of the VTT (enabled CORS and the correct ContentType are required)
             'trackContentType': 'text/vtt', // Currently only VTT is supported
             'name': 'Íslenska', // a Name for humans

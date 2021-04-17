@@ -40,6 +40,7 @@ dependencies:
   auto_orientation: ^1.0.6
   video_player: ^1.0.1
   cast: ^0.3.0
+  move_to_background: ^1.0.1
 
 dev_dependencies:
   flutter_test:

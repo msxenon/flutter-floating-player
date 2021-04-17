@@ -1,7 +1,7 @@
 import 'package:auto_orientation/auto_orientation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/floating_view_controller.dart';
 import 'package:flutter_player/subtitle/data/models/style/subtitle_position.dart';
 import 'package:flutter_player/subtitle/data/models/style/subtitle_style.dart';
 import 'package:flutter_player/subtitle/subtitle_wrapper_package.dart';
@@ -84,7 +84,7 @@ class _VideoPlayerBothWidgetState extends State<VideoPlayerBothWidget> {
     final height = size?.height ?? 0;
 
     return FittedBox(
-      fit: BoxFit.cover,
+      fit: BoxFit.fitHeight,
       child: SizedBox(width: width, height: height, child: child),
     );
   }

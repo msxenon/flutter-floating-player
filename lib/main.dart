@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_player/floating_player/player_wrapper/controllers/played_item_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/mock_data.dart';
 import 'package:flutter_player/player_init.dart';
 import 'package:get/get.dart';
+import 'package:move_to_background/move_to_background.dart';
 import 'package:overlay_support/overlay_support.dart';
 
+import 'floating_player/player_wrapper/logic/player_data.dart';
 import 'floating_player/player_wrapper/navigation/player_nav.dart';
 
 void main() {
@@ -56,29 +57,31 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget player;
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          appBar: AppBar(
-            title: Text(widget.title),
+    return WillPopScope(
+      onWillPop: () async {
+        await MoveToBackground.moveTaskToBack();
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              RaisedButton(
+                onPressed: () {
+                  Get.to(SecondPage(
+                    title: 'Dynamic Page',
+                  ));
+                },
+                child: const Text('Open Dynamic Pages'),
+              ),
+            ],
           ),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                RaisedButton(
-                  onPressed: () {
-                    Get.to(SecondPage(
-                      title: 'Dynamic Page',
-                    ));
-                  },
-                  child: const Text('Open Dynamic Pages'),
-                ),
-              ],
-            ),
-          ),
-        ).attachPLayerAware(),
-      ],
+        ),
+      ).attachPLayerAware(),
     );
   }
 }

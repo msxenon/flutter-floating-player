@@ -2,7 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_player/floating_player/player_wrapper/controllers/video_view_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/text_size_enum.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/floating_view_controller.dart';
 import 'package:flutter_player/floating_player/player_wrapper/ui/video_player_both.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
