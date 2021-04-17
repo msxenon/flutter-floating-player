@@ -135,10 +135,7 @@ class FloatingViewController extends GetxController {
       final videoRes = (playerData.videoRes == null || playerData.useMockData)
           ? {'BigBunny': MockData.mp4Bunny, 'Other': MockData.shortMovie}
           : playerData.videoRes;
-      final subtitleLink =
-          (playerData.subtitle == null || playerData.useMockData)
-              ? MockData.srt
-              : playerData.subtitle;
+      final subtitleLink = playerData.subtitle;
       playerSettingsController.initVideoResolutions(videoRes);
       await setNewVideo();
       await playerSettingsController.initSubtitles(subtitleLink: subtitleLink);
