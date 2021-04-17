@@ -16,14 +16,21 @@ class AdvancedOverlayWidget extends StatelessWidget {
 
   static const autoSeekSeconds = 10;
   String getPosition() {
-    final duration = Duration(
+    final positonDuration = Duration(
         milliseconds: controller
             .videoPlayerController.value.position.inMilliseconds
             .round());
-
-    return [duration.inMinutes, duration.inSeconds]
+    final totalDuration = Duration(
+        milliseconds: controller
+            .videoPlayerController.value.duration.inMilliseconds
+            .round());
+    final position = [positonDuration.inMinutes, positonDuration.inSeconds]
         .map((seg) => seg.remainder(60).toString().padLeft(2, '0'))
         .join(':');
+    final total = [totalDuration.inMinutes, totalDuration.inSeconds]
+        .map((seg) => seg.remainder(60).toString().padLeft(2, '0'))
+        .join(':');
+    return '$position / $total';
   }
 
   @override
@@ -148,6 +155,17 @@ class AdvancedOverlayWidget extends StatelessWidget {
       );
 
   Widget buildPlay(double iconSize) {
+    if (controller.isEnded()) {
+      return IconButton(
+          icon: const Icon(
+            Icons.replay_rounded,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            controller.videoPlayerController.seekTo(const Duration());
+            controller.videoPlayerController.play();
+          });
+    }
     final canForward = (controller.videoPlayerController.value.duration -
                 controller.videoPlayerController.value.position)
             .inSeconds >
@@ -155,6 +173,7 @@ class AdvancedOverlayWidget extends StatelessWidget {
     final canRewind =
         controller.videoPlayerController.value.position.inSeconds >
             autoSeekSeconds;
+
     return Row(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

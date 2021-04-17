@@ -99,7 +99,7 @@ void showPLayer(String id) {
     bgColor: Colors.black,
     playerData: PlayerData<String, String>(
         itemTitle: 'BigBuckBunny / VttSUB',
-        startPosition: const Duration(seconds: 20 ?? 0),
+        startPosition: const Duration(seconds: 20),
         onDispose: () {},
         itemId: id,
         subtitle: MockData.testVtt,

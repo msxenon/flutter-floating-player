@@ -43,6 +43,9 @@ class PlayerSettingsController extends GetxController {
   }
 
   void initVideoResolutions(Map<String, String> res) {
+    if (res == null || res.isEmpty) {
+      throw Exception('video res is empty');
+    }
     videoResolutions = res;
     if (selectedRes == null || !videoResolutions.containsKey(selectedRes)) {
       selectedRes = videoResolutions.keys.first;
@@ -124,7 +127,7 @@ class PlayerSettingsController extends GetxController {
 
   @override
   void onClose() {
-    subtitleController.detach();
+    subtitleController?.detach();
     super.onClose();
   }
 }

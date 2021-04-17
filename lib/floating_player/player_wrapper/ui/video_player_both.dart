@@ -84,7 +84,7 @@ class _VideoPlayerBothWidgetState extends State<VideoPlayerBothWidget> {
     final height = size?.height ?? 0;
 
     return FittedBox(
-      fit: BoxFit.fitHeight,
+      fit: BoxFit.contain,
       child: SizedBox(width: width, height: height, child: child),
     );
   }

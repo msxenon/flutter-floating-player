@@ -158,14 +158,16 @@ class FloatingViewController extends GetxController {
     debugPrint('setNewVideo $filePath => isLocal? $_isLocal');
     if (_isLocal) {
       videoPlayerController = VideoPlayerController.file(File(filePath));
-      await videoPlayerController
-          .initialize()
-          .then((_) => videoPlayerController.play());
+      await videoPlayerController.initialize().then((_) {
+        videoPlayerController.seekTo(_getStartPosition());
+        videoPlayerController.play();
+      });
     } else {
       videoPlayerController = VideoPlayerController.network(filePath);
-      await videoPlayerController
-          .initialize()
-          .then((_) => videoPlayerController.play());
+      await videoPlayerController.initialize().then((_) {
+        videoPlayerController.seekTo(_getStartPosition());
+        videoPlayerController.play();
+      });
     }
 
     videoPlayerController.addListener(() async {
@@ -343,5 +345,33 @@ class FloatingViewController extends GetxController {
   Future<bool> disposePlayerRelatedControllers() async {
     await Get.delete<PlayerSettingsController>(force: true);
     return Get.delete<FloatingViewController>(force: true);
+  }
+
+  Duration _getStartPosition() {
+    Duration result;
+    //test
+    const startPosition = Duration(seconds: 577);
+
+    // final startPosition = playerData.startPosition ?? const Duration();
+    if (startPosition + const Duration(seconds: 10) >
+        videoPlayerController.value.duration) {
+      result = const Duration();
+      debugPrint('StartPosition #1');
+    } else {
+      if (startPosition - const Duration(seconds: 10) < const Duration()) {
+        result = const Duration();
+        debugPrint('StartPosition #2');
+      } else {
+        result = startPosition - const Duration(seconds: 10);
+        debugPrint('StartPosition #3');
+      }
+    }
+    debugPrint('StartPosition getter $startPosition => $result');
+    return result;
+  }
+
+  bool isEnded() {
+    return videoPlayerController.value.position.inSeconds ==
+        videoPlayerController.value.duration.inSeconds;
   }
 }
