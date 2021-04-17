@@ -346,9 +346,9 @@ class FloatingViewController extends GetxController {
   Duration _getStartPosition() {
     Duration result;
     //test
-    const startPosition = Duration(seconds: 577);
+    // const startPosition = Duration(seconds: 577);
 
-    // final startPosition = playerData.startPosition ?? const Duration();
+    final startPosition = playerData.startPosition ?? const Duration();
     if (startPosition + const Duration(seconds: 10) >
         videoPlayerController.value.duration) {
       result = const Duration();
