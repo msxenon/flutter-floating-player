@@ -86,6 +86,8 @@ class PLayerNav {
     overlayEntry?.dismiss(animate: false);
     overlayEntry = null;
     _lastOverlayId = null;
+    await Future.delayed(const Duration(milliseconds: 50));
+
     final controller = Get.find<FloatingViewController>();
     await controller?.disposePlayerRelatedControllers();
 
