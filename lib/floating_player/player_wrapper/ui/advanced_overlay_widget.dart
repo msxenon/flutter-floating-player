@@ -155,6 +155,11 @@ class AdvancedOverlayWidget extends StatelessWidget {
       );
 
   Widget buildPlay(double iconSize) {
+    if (controller.videoPlayerController.value.isBuffering) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
     if (controller.isEnded()) {
       return IconButton(
           icon: const Icon(

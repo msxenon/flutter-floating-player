@@ -273,7 +273,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
                     onVerticalDragEnd: (v) {
                       _floatingViewController.dragging(false);
                       if (_floatingViewController.isFullScreen.value ||
-                          _floatingViewController.isUsingController.value) {
+                          _floatingViewController.controlsIsShowing.value) {
                         return;
                       }
 
@@ -300,7 +300,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
                     },
                     onVerticalDragUpdate: (v) async {
                       if (_floatingViewController.isFullScreen.value ||
-                          _floatingViewController.isUsingController.value) {
+                          _floatingViewController.controlsIsShowing.value) {
                         return;
                       }
                       _floatingViewController.dragging(true);
@@ -324,7 +324,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
                     },
                     onHorizontalDragUpdate: (f) {
                       if (!_floatingViewController.canClose.value ||
-                          _floatingViewController.isUsingController.value) {
+                          _floatingViewController.controlsIsShowing.value) {
                         return;
                       }
                       _floatingViewController.dragging(true);
@@ -349,7 +349,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
                       }
                     },
                     onHorizontalDragEnd: (f) {
-                      if (_floatingViewController.isUsingController.value) {
+                      if (_floatingViewController.controlsIsShowing.value) {
                         return;
                       }
                       if (closePercentage == 1) {

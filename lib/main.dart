@@ -94,7 +94,7 @@ class SecondPage extends StatefulWidget {
   _SecState createState() => _SecState();
 }
 
-void showPLayer(String id,String subtitleUrl) {
+void showPLayer(String id, String subtitleUrl) {
   PLayerNav.showPlayer(
     bgColor: Colors.black,
     playerData: PlayerData<String, String>(
@@ -108,13 +108,13 @@ void showPLayer(String id,String subtitleUrl) {
           debugPrint('savePos callback $x');
         }),
     details: (_) => FlatButton(
-        onPressed: () {
-          showPLayer('${id}kdk',subtitleUrl);
-        },
-        child: const Text(
-          'Play nested',
-          style: TextStyle(color: Colors.white),
-        ),
+      onPressed: () {
+        showPLayer('${id}kdk', subtitleUrl);
+      },
+      child: const Text(
+        'Play nested',
+        style: TextStyle(color: Colors.white),
+      ),
     ),
   );
 }
@@ -132,15 +132,15 @@ class _SecState extends State<SecondPage> {
           children: <Widget>[
             RaisedButton(
               onPressed: () {
-                showPLayer('33',null);
+                showPLayer('33', null);
               },
-              child: const Text('Open Floating Player Screen / No CC'),
+              child: const Text('Open player / No CC'),
             ),
             RaisedButton(
               onPressed: () {
-                showPLayer('44',MockData.testVtt);
+                showPLayer('44', MockData.defaultSubtitle);
               },
-              child: const Text('Open Floating Player Screen'),
+              child: const Text('Open player / CC'),
             ),
             RaisedButton(
               onPressed: () {

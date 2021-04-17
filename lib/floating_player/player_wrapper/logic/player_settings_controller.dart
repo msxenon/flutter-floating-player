@@ -84,9 +84,11 @@ class PlayerSettingsController extends GetxController {
   Future<void> _setSubtitle() async {
     var subtitleLink = link;
 
-    final subtitleType = SubtitleType.values.firstWhere(
-        (e) => subtitleLink.split('.')?.last == e.getName(),
-        orElse: () => SubtitleType.webvtt);
+    final subtitleType = subtitleLink != null
+        ? SubtitleType.values.firstWhere(
+            (e) => subtitleLink.split('.')?.last == e.getName(),
+            orElse: () => SubtitleType.webvtt)
+        : null;
     if (subtitleController == null) {
       isEnabled = link?.isNotEmpty == true;
     }

@@ -60,8 +60,8 @@ class FloatingViewController extends GetxController {
       }
       removeOverlay();
     });
-    ever(isUsingController, (f) {
-      if (isUsingController.value) {
+    ever(controlsIsShowing, (f) {
+      if (controlsIsShowing.value) {
         controllerTimer?.cancel();
       } else {
         _startToggleOffTimer();
@@ -89,7 +89,6 @@ class FloatingViewController extends GetxController {
   final controllersCanBeVisible = true.obs;
   final canMinimize = true.obs;
   final canClose = true.obs;
-  final isUsingController = false.obs;
   OverlayEntry _overlayEntry;
   final Color floatingBottomSheetBgColor = Colors.white;
   final Color floatingBottomSheetTextColor = Colors.black87;
