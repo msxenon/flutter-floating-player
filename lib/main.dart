@@ -94,7 +94,7 @@ class SecondPage extends StatefulWidget {
   _SecState createState() => _SecState();
 }
 
-void showPLayer(String id, String subtitleUrl) {
+void showPLayer(String id, String subtitleUrl, {String vttUrl}) {
   PLayerNav.showPlayer(
     bgColor: Colors.black,
     playerData: PlayerData<String, String>(
@@ -103,6 +103,7 @@ void showPLayer(String id, String subtitleUrl) {
         onDispose: () {},
         itemId: id,
         subtitle: subtitleUrl,
+        optionalSubtitle: vttUrl,
         videoItem: 'movieX',
         savePosition: (x) {
           debugPrint('savePos callback $x');
@@ -138,7 +139,8 @@ class _SecState extends State<SecondPage> {
             ),
             RaisedButton(
               onPressed: () {
-                showPLayer('44', MockData.defaultSubtitle);
+                showPLayer('44', MockData.defaultSubtitle,
+                    vttUrl: MockData.testWebVtt);
               },
               child: const Text('Open player / CC'),
             ),

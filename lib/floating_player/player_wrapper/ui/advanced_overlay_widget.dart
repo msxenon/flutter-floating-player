@@ -97,6 +97,7 @@ class AdvancedOverlayWidget extends StatelessWidget {
                                   controller,
                                   List.generate(f.length, (index) {
                                     final e = f[index];
+                                    // debugPrint('cast device ${e.name}');
                                     return FloatingSheetListTile(
                                       floatingViewController: controller,
                                       title: e.name,

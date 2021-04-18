@@ -78,7 +78,7 @@ class CastIcon extends StatelessWidget {
       stream: CastDiscoveryService().stream,
       initialData: CastDiscoveryService().devices,
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
+        if (snapshot.hasData && snapshot.data.isNotEmpty) {
           return IconButton(
               icon: const Icon(
                 Icons.cast,

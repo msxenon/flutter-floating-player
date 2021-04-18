@@ -13,11 +13,15 @@ class PlayerData<VI, SI> {
       this.subItem,
       this.savePosition,
       this.videoRes,
+      this.optionalSubtitle,
       this.subtitle,
       this.useMockData = true,
       this.startPosition});
   final Map<String, String> videoRes;
   final String subtitle;
+
+  ///used to cast vtt subtitle to chromecast
+  final String optionalSubtitle;
   final bool useMockData;
   final Duration startPosition;
   final VI videoItem;
@@ -41,7 +45,7 @@ class PlayerData<VI, SI> {
       contentId: videoLink ?? videoRes.values.first,
       contentType: 'video/mp4',
       title: itemTitle,
-      subtitlesUrl: subtitle,
+      subtitlesUrl: optionalSubtitle ?? subtitle,
       streamType: playType == PlayType.video ? 'BUFFERED' : 'LIVE',
       position: position?.inSeconds ?? startPosition?.inSeconds ?? 0,
     ).toChromeCastMap();
@@ -157,8 +161,8 @@ class CastMedia {
                 // ignore: lines_longer_than_80_chars
                 subtitlesUrl, // the URL of the VTT (enabled CORS and the correct ContentType are required)
             'trackContentType': 'text/vtt', // Currently only VTT is supported
-            'name': 'Íslenska', // a Name for humans
-            'language': 'is-IS', // the language
+            'name': 'Arabic', // a Name for humans
+            'language': 'ar-IQ', // the language
             'subtype': 'SUBTITLES' // should be SUBTITLES
           }
         ]
