@@ -1,76 +1,136 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_player/floating_player/draggable_widget.dart';
-import 'package:flutter_player/floating_player/player_wrapper/ui/details/player_details.dart';
-import 'package:flutter_player/floating_player/player_wrapper/ui/player.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/floating_view_controller.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/player_data.dart';
+import 'package:flutter_player/floating_player/player_wrapper/logic/player_state_enum.dart';
+import 'package:flutter_player/floating_player/player_wrapper/ui/floating_player.dart';
+import 'package:flutter_player/floating_player/player_wrapper/ui/player_wth_controllers.dart';
 import 'package:get/get.dart';
-
-import '../controllers/video_view_controller.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 class PLayerNav {
-  static OverlayEntry overlayEntry;
-
-  static void showPlayer(BuildContext ctx) async {
-    if (!clearViews()) {
-      await Future.delayed(Duration(milliseconds: 200));
+  static OverlaySupportEntry overlayEntry;
+  static String _lastOverlayId;
+  static void showPlayer(
+      {@required PlayerData playerData,
+      @required WidgetBuilder details,
+      @required Color bgColor,
+      double bottomMargin = 80,
+      OverlayControllerData customControllers}) async {
+    if (_lastOverlayId == playerData.itemId) {
+      return;
     }
-    OverlayState overlayState = Overlay.of(ctx);
-    overlayEntry = OverlayEntry(
-        maintainState: true,
-        opaque: false,
-        builder: (context) {
-          return Positioned.fill(
-            child: GetBuilder<FloatingViewController>(
-                init: FloatingViewController(),
-                builder: (model) {
-                  return Material(
-                    type: MaterialType.transparency,
-                    color: Colors.transparent,
-                    child: Stack(
-                      children: [
-                        Obx(
-                          () => IgnorePointer(
-                            ignoring: !model.isMaximized.value,
-                            child: AnimatedOpacity(
-                              duration: Duration(milliseconds: 250),
-                              opacity: model.isMaximized.value ? 1 : 0,
-                              child: PLayerDetails(),
-                            ),
-                          ),
-                        ),
-                        DraggableWidget(
-                          onRemove: () {
-                            clearViews();
-                          },
-                          bottomMargin: 80,
-                          intialVisibility: true,
-                          horizontalSapce: 0,
-                          dragAnimationScale: 0.5,
-                          shadowBorderRadius: 0,
-                          touchDelay: Duration(milliseconds: 100),
-                          child: Player(
-                            usePlayerPlaceHolder: true,
-                          ),
-                          initialPosition: AnchoringPosition.maximized,
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-          );
-        });
-    overlayState.insert(overlayEntry);
+    await _removeOverlayIfExist(bgColor);
+    kNotificationSlideDuration = const Duration(milliseconds: 0);
+    _lastOverlayId = playerData.itemId;
+
+    final newXX = showOverlay((context, progress) {
+      return FloatingWrapper(
+        key: Key('player:$_lastOverlayId'),
+        customControllers: customControllers,
+        onRemove: () {
+          _removeOverlayIfExist(null);
+          // clearViews('onRemove', forceClear: true);
+        },
+        playerData: playerData,
+        details: details,
+        bgColor: bgColor,
+        bottomMargin: bottomMargin,
+      );
+    },
+        // key: Key('PlayerOverlay$_lastOverlayId'),
+        duration: Duration.zero,
+        curve: Curves.decelerate);
+    overlayEntry?.dismiss(animate: false);
+    overlayEntry = newXX;
   }
 
-  static bool clearViews() {
-    if (overlayEntry != null) {
-      overlayEntry.remove();
-      overlayEntry = null;
-      return false;
+  ///returns false if overlay just dismissed
+  static Future<bool> clearViews(String tag,
+      {bool forceClear = false, bool justMinimize = true}) async {
+    try {
+      //print('clearView called $forceClear ${overlayEntry != null} $tag');
+      final currentRoute = Get.currentRoute;
+      bool hasPLayerOpen = false;
+      if (overlayEntry != null) {
+        hasPLayerOpen = true;
+        final controller = Get.find<FloatingViewController>();
+
+        if (forceClear || controller.playerState == PlayerState.error) {
+          await _closePlayer();
+          return false;
+        }
+        if (controller.isFullScreen.value) {
+          controller.toggleFullScreen();
+          return false;
+        } else if (controller.isMaximized.value &&
+            !controller.overlayJustRemoved()) {
+          controller.minimize();
+          return false;
+        } else if (currentRoute == '/') {}
+      }
+      debugPrint(
+          // ignore: lines_longer_than_80_chars
+          'PLayer BackAction Interceptor $currentRoute isPLayerOverlay $hasPLayerOpen $tag');
+    } catch (e, s) {
+      // ignore: prefer_interpolation_to_compose_strings
+      debugPrint(
+          // ignore: prefer_interpolation_to_compose_strings
+          e +
+              s.toString() +
+              ' ========================================== $tag');
     }
     return true;
   }
 
-  static bool canPopup() {
-    return clearViews();
+  static Future<void> _closePlayer() async {
+    overlayEntry?.dismiss(animate: false);
+    overlayEntry = null;
+    _lastOverlayId = null;
+    await Future.delayed(const Duration(milliseconds: 50));
+
+    final controller = Get.find<FloatingViewController>();
+    await controller?.disposePlayerRelatedControllers();
+
+    return;
   }
+
+  static Future<void> _removeOverlayIfExist(Color bgColor) async {
+    if (overlayEntry == null) {
+      return;
+    }
+    if (bgColor != null) {
+      showOverlay((context, progress) {
+        return Container(
+          color: bgColor,
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }, duration: const Duration(milliseconds: 150));
+    }
+    await _closePlayer();
+    await Future.delayed(const Duration(milliseconds: 50));
+    return;
+  }
+}
+
+class PlayerAwareScaffold extends StatelessWidget {
+  const PlayerAwareScaffold({Key key, this.child}) : super(key: key);
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+        child: child,
+        onWillPop: () async {
+          return PLayerNav.clearViews('WillPopScope');
+        });
+  }
+}
+
+extension ScaffoldExts on Scaffold {
+  Widget attachPLayerAware() => PlayerAwareScaffold(
+        child: this,
+      );
 }

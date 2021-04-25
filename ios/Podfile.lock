@@ -4,10 +4,13 @@ PODS:
     - Flutter
     - MobileVLCKit (~> 3.3.15)
   - MobileVLCKit (3.3.15)
+  - wakelock (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_vlc_player (from `.symlinks/plugins/flutter_vlc_player/ios`)
+  - wakelock (from `.symlinks/plugins/wakelock/ios`)
 
 SPEC REPOS:
   trunk:
@@ -18,12 +21,15 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_vlc_player:
     :path: ".symlinks/plugins/flutter_vlc_player/ios"
+  wakelock:
+    :path: ".symlinks/plugins/wakelock/ios"
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_vlc_player: bb2059d1a5833e695ec30a25864336baf065fd9f
   MobileVLCKit: 9a04c9fa19e35c376ddf59425dd82e397d5899ad
+  wakelock: bfc7955c418d0db797614075aabbc58a39ab5107
 
 PODFILE CHECKSUM: a75497545d4391e2d394c3668e20cfb1c2bbd4aa
 
-COCOAPODS: 1.9.1
+COCOAPODS: 1.10.1
