@@ -73,11 +73,11 @@ class PlayerSettingsController extends GetxController {
 
   String getCaptionStringValue() {
     if (isEnabled == null) {
-      return 'Unavailable'.tr;
+      return 'unavailable'.tr;
     } else if (isEnabled) {
-      return 'Arabic'.tr;
+      return 'arabic'.tr;
     } else {
-      return 'Off'.tr;
+      return 'off'.tr;
     }
   }
 

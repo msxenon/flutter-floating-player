@@ -144,7 +144,7 @@ void showFloatingBottomSheet(BuildContext context,
                         [
                           FloatingSheetListTile(
                             floatingViewController: floatingViewController,
-                            title: 'Captions'.tr,
+                            title: 'captions'.tr,
                             icon: Icons.closed_caption_outlined,
                             titleStatus: floatingViewController
                                 .playerSettingsController
@@ -163,7 +163,7 @@ void showFloatingBottomSheet(BuildContext context,
                                                 .playerSettingsController
                                                 .isEnabled ==
                                             false,
-                                        title: 'Off'.tr,
+                                        title: 'off'.tr,
                                         onTap: () => floatingViewController
                                             .playerSettingsController
                                             .toggleSubtitle(false),
@@ -173,7 +173,7 @@ void showFloatingBottomSheet(BuildContext context,
                                             floatingViewController,
                                         selected: floatingViewController
                                             .playerSettingsController.isEnabled,
-                                        title: 'Arabic'.tr,
+                                        title: 'arabic'.tr,
                                         onTap: () => floatingViewController
                                             .playerSettingsController
                                             .toggleSubtitle(true),
@@ -185,7 +185,7 @@ void showFloatingBottomSheet(BuildContext context,
                               .playerSettingsController.isEnabled)
                             FloatingSheetListTile(
                               floatingViewController: floatingViewController,
-                              title: 'Text_size'.tr,
+                              title: 'text_size'.tr,
                               icon: Icons.text_fields_outlined,
                               titleStatus: floatingViewController
                                   .playerSettingsController.textEnum
@@ -222,7 +222,7 @@ void showFloatingBottomSheet(BuildContext context,
                               1)
                             FloatingSheetListTile(
                               floatingViewController: floatingViewController,
-                              title: 'Video_Resolution'.tr,
+                              title: 'video_resolution'.tr,
                               icon: Icons.video_settings_outlined,
                               titleStatus: floatingViewController
                                   .playerSettingsController.selectedRes,
@@ -264,7 +264,7 @@ void showFloatingBottomSheet(BuildContext context,
                         ),
                         FloatingSheetListTile(
                           floatingViewController: floatingViewController,
-                          title: 'Cancel'.tr,
+                          title: 'cancel'.tr,
                           icon: Icons.close,
                           onTap: () {},
                         )

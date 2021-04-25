@@ -403,7 +403,7 @@ class _DraggableWidgetState extends State<DraggableWidget>
                                                 padding:
                                                     const EdgeInsets.all(20),
                                                 child: Text(
-                                                  'Close'.tr,
+                                                  'close'.tr,
                                                   style: const TextStyle(
                                                       color: Colors.white),
                                                 ),
