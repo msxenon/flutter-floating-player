@@ -30,7 +30,6 @@ class PlayerCastSettings extends GetxService {
     _session = await CastSessionManager().startSession(device);
 
     _session?.stateStream?.listen((state) {
-      debugPrint('newState $state ===========================================');
       if (state == CastSessionState.connected) {
         sendMessage(payload);
       }
@@ -38,9 +37,7 @@ class PlayerCastSettings extends GetxService {
     });
 
     _session?.messageStream?.listen((message) {
-      debugPrint('receive message Start======================================');
-      debugPrint('$message');
-      debugPrint('receive message End========================================');
+      debugPrint('CastMessage $message');
     });
 
     _session?.sendMessage(CastSession.kNamespaceReceiver, {
@@ -50,10 +47,7 @@ class PlayerCastSettings extends GetxService {
   }
 
   void sendMessage(Map<String, dynamic> message) {
-    debugPrint('message will be send ========================================');
-    debugPrint('$message');
     _session?.sendMessage(CastSession.kNamespaceMedia, message);
-    debugPrint('message sent ================================================');
   }
 
   void disconnect() async {

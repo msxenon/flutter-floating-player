@@ -122,7 +122,7 @@ class CastMedia {
       'type': 'LOAD',
       'autoPlay': autoPlay,
       'currentTime': position,
-      'activeTracks': [],
+      'activeTrackIds': [0],
       'media': {
         'contentId': contentId,
         'contentType': contentType,
@@ -140,9 +140,15 @@ class CastMedia {
               // ignore: lines_longer_than_80_chars
               'SANS_SERIF', // can be: "SANS_SERIF", "MONOSPACED_SANS_SERIF", "SERIF", "MONOSPACED_SERIF", "CASUAL", "CURSIVE", "SMALL_CAPITALS",
           'windowColor':
-              '#00000', // see http://dev.w3.org/csswg/css-color/#hex-notation
+              '#FFFF00', // see http://dev.w3.org/csswg/css-color/#hex-notation
           'windowRoundedCornerRadius': 10, // radius in px
-          'windowType': 'NONE' // can be: "NONE", "NORMAL", "ROUNDED_CORNERS"
+          'windowType': 'NONE', // can be: "NONE", "NORMAL", "ROUNDED_CORNERS"
+          'backgroundColor':
+              '#FFFF00', // see http://dev.w3.org/csswg/css-color/#hex-notation
+          'foregroundColor':
+              '#000000', // see http://dev.w3.org/csswg/css-color/#hex-notation
+          'edgeColor':
+              '#FFFF00', // see http://dev.w3.org/csswg/css-color/#hex-notation
         },
         'metadata': {
           'metadataType': 0,
