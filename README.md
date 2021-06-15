@@ -1,4 +1,5 @@
 # Flutter Floating PLayer
+[This repository is no longer maintained, code still needs to be cleaned well, adding Unit tests ... etc]
 
 <div style="text-align: center"><table><tr>
   <td style="text-align: center">
